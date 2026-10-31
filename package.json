@@ -1,0 +1,12 @@
+{
+  "name": "polycats",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "python3 scripts/start.py",
+    "test": "node --test --test-isolation=none tests/*.test.js",
+    "build": "node scripts/build.mjs",
+    "build:pages": "node scripts/build.mjs --pages"
+  }
+}
