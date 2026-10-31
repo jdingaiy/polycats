@@ -23,6 +23,8 @@ jobs:
           node-version: '24'
       - run: npm test
       - run: npm run build:pages
+        env:
+          POLYCATS_API_BASE: ${{ vars.POLYCATS_API_BASE }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

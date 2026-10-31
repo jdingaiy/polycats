@@ -5,6 +5,7 @@ import mimetypes
 import os
 from pathlib import Path
 import sys
+from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).parent))
 from segment import process_image
@@ -13,6 +14,33 @@ MAX_UPLOAD = 32 * 1024 * 1024
 STATIC = {'index.html', 'style.css', 'app.js', 'cat.js', 'dist/polycats-demo.html'}
 
 class Handler(BaseHTTPRequestHandler):
+    def origin_allowed(self):
+        origin = self.headers.get('Origin')
+        if not origin:
+            return False
+        configured = {v.strip().rstrip('/') for v in os.environ.get('ALLOWED_ORIGINS', '').split(',') if v.strip()}
+        if origin in configured:
+            return True
+        parsed = urlsplit(origin)
+        return parsed.scheme in ('http', 'https') and not parsed.path and parsed.netloc == self.headers.get('Host')
+
+    def end_headers(self):
+        if self.headers.get('Origin'):
+            self.send_header('Vary', 'Origin')
+        if self.origin_allowed():
+            self.send_header('Access-Control-Allow-Origin', self.headers['Origin'])
+        super().end_headers()
+
+    def do_OPTIONS(self):
+        if self.path != '/api/segment' or not self.origin_allowed():
+            return self.send_json(403, {'error': '此网站尚未获准连接图片服务。'})
+        self.send_response(204)
+        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Max-Age', '600')
+        self.send_header('Content-Length', '0')
+        self.end_headers()
+
     def send_json(self, status, payload):
         data = json.dumps(payload, ensure_ascii=False).encode()
         self.send_response(status)
@@ -40,6 +68,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path != '/api/segment':
             return self.send_json(404, {'error': '未找到服务。'})
+        if self.headers.get('Origin') and not self.origin_allowed():
+            return self.send_json(403, {'error': '此网站尚未获准连接图片服务。'})
         try:
             size = int(self.headers.get('Content-Length', '0'))
             if not 0 < size <= MAX_UPLOAD:

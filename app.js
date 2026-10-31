@@ -13,10 +13,10 @@ function render(){
  const visible=Boolean(importedPhoto&&$('#show-photo').checked&&!drawing);
  $('#photo-underlay').hidden=!visible;$('#photo-toggle').hidden=!importedPhoto;$('#board').classList.toggle('photo-visible',visible);
  const fit=currentLayout();$('#pose-status').textContent=drawing?'':fit.pose.name+'状';
- canvas.classList.toggle('drawing',drawing);$('#draw').classList.toggle('active',drawing);
+ canvas.classList.toggle('drawing',drawing);$('#draw').classList.toggle('active',drawing);$('#draw').setAttribute('aria-pressed',String(drawing));
  let overlay='';
  if(drawing){overlay='<rect width="500" height="500" fill="#f0f0f0"/><polyline points="'+draft.map(p=>p.join(',')).join(' ')+'" fill="#00000008" stroke="#666" stroke-width="1"/>';draft.forEach((p,i)=>overlay+=`<circle cx="${p[0]}" cy="${p[1]}" r="${i?3:6}" fill="#333"/>`);}
- else{points.forEach((p,i)=>{const q=points[(i+1)%points.length];overlay+=`<line data-edge="${i}" class="edge" x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" stroke="transparent" stroke-width="16"/>`;});points.forEach((p,i)=>overlay+=`<circle data-index="${i}" class="handle-hit" cx="${p[0]}" cy="${p[1]}" r="10" fill="transparent"/><circle data-index="${i}" class="handle" cx="${p[0]}" cy="${p[1]}" r="3" fill="white" stroke="#666" stroke-width="1"/>`);}
+ else{points.forEach((p,i)=>{const q=points[(i+1)%points.length];overlay+=`<line data-edge="${i}" class="edge" x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" stroke="transparent" stroke-width="24"/>`;});points.forEach((p,i)=>overlay+=`<circle data-index="${i}" class="handle-hit" cx="${p[0]}" cy="${p[1]}" r="15" fill="transparent"/><circle data-index="${i}" class="handle" cx="${p[0]}" cy="${p[1]}" r="3" fill="white" stroke="#666" stroke-width="1"/>`);}
  canvas.innerHTML=catSVG(points,seed,anchor,.6,.45,matchLock).replace('</svg>',`<g id="editor">${overlay}</g></svg>`);
 }
 function useShape(p,photo=null){importedPhoto=photo;points=structuredClone(p);anchor=null;matchLock=null;drawing=false;draft=[];render();}
@@ -30,11 +30,14 @@ canvas.addEventListener('pointerdown',e=>{
   const target=e.target.closest('[data-index],[data-edge],[data-face]');if(!target)return;
   e.preventDefault();const fitted=currentLayout(),f=fitted.face;matchLock=fitted.pose.id;
   drag={id:e.pointerId,start:p,base:structuredClone(points),face:[f.x,f.y],type:target.hasAttribute('data-index')?'vertex':target.hasAttribute('data-edge')?'edge':'face',index:Number(target.dataset.index??target.dataset.edge)};
-  canvas.setPointerCapture(e.pointerId);canvas.classList.add('dragging');
+  canvas.setPointerCapture(e.pointerId);
 });
+function endDrag(e){if(drag?.id!==e.pointerId)return;drag=null;matchLock=null;canvas.classList.remove('dragging');scheduleRender();}
 function move(e){
   if(!drag||e.pointerId!==drag.id)return;
   const p=position(e),dx=p[0]-drag.start[0],dy=p[1]-drag.start[1];
+  if(!drag.moved&&Math.hypot(dx,dy)<3)return;
+  drag.moved=true;canvas.classList.add('dragging');
   if(drag.type==='face'){
     const candidate=[drag.face[0]+dx,drag.face[1]+dy];
     if(inside(candidate,points)){anchor=candidate;scheduleRender();}return;
@@ -50,8 +53,8 @@ function move(e){
   }
 }
 canvas.addEventListener('pointermove',move);
-canvas.addEventListener('pointerup',e=>{if(drag?.id===e.pointerId){move(e);drag=null;matchLock=null;canvas.classList.remove('dragging');scheduleRender();}});
-for(const name of['pointercancel','lostpointercapture'])canvas.addEventListener(name,e=>{if(drag?.id===e.pointerId){drag=null;matchLock=null;canvas.classList.remove('dragging');scheduleRender();}});
+canvas.addEventListener('pointerup',e=>{if(drag?.id===e.pointerId){move(e);endDrag(e);}});
+for(const name of['pointercancel','lostpointercapture'])canvas.addEventListener(name,endDrag);
 canvas.addEventListener('dblclick',e=>{
   if(drawing)return;const p=position(e);
   // Pointer capture and SVG replacement can retarget dblclick to the canvas.
@@ -88,3 +91,14 @@ $('#photo-input').onchange=async e=>{
  finally{if(version===importVersion){setImportBusy(false);importController=null;}}
 };
 render();
+
+// Touch feedback never depends on sticky mobile :hover or focus state.
+const clearButtonPress=()=>document.querySelectorAll('button.is-pressed').forEach(b=>b.classList.remove('is-pressed'));
+document.querySelectorAll('button').forEach(button=>{
+ button.addEventListener('pointerdown',e=>{if(!button.disabled&&e.button===0)button.classList.add('is-pressed');});
+ button.addEventListener('pointerleave',()=>button.classList.remove('is-pressed'));
+ button.addEventListener('lostpointercapture',()=>button.classList.remove('is-pressed'));
+});
+for(const event of ['pointerup','pointercancel'])document.addEventListener(event,clearButtonPress,true);
+window.addEventListener('blur',()=>{clearButtonPress();if(drag){drag=null;matchLock=null;canvas.classList.remove('dragging');scheduleRender();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)clearButtonPress();});
