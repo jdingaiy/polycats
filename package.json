@@ -4,9 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "python3 scripts/start.py",
+    "start": "node scripts/start.mjs",
     "test": "node --test --test-isolation=none tests/*.test.js",
     "build": "node scripts/build.mjs",
     "build:pages": "node scripts/build.mjs --pages"
+  },
+  "dependencies": {
+    "onnxruntime-web": "1.22.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12"
   }
 }

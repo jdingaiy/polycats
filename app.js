@@ -1,7 +1,6 @@
+import {segmentInBrowser} from './browser-segment.js';
 import {PRESETS,pathOf,catSVG,inside,validPolygon,poseLayout,randomOutline} from './cat.js';
 const $=s=>document.querySelector(s),canvas=$('#canvas');
-const apiBase=String(globalThis.POLYCATS_API_BASE||'').replace(/\/$/,'');
-const staticHosted=globalThis.POLYCATS_STATIC_HOST===true||location.hostname.endsWith('.github.io');
 const newSeed=()=>crypto.getRandomValues(new Uint32Array(1))[0];
 let importedPhoto=null,importVersion=0,importController=null;
 let points=structuredClone(PRESETS[0].points),seed=newSeed(),anchor=null,drawing=false,draft=[],drag=null,matchLock=null,frame=0;
@@ -71,24 +70,21 @@ function importMessage(text,error=false){const el=$('#import-status');el.textCon
 function setImportBusy(busy){$('#import-photo').textContent=busy?'正在导入…':'导入图片';$('#import-photo').setAttribute('aria-busy',String(busy));}
 function cancelImport(){importVersion++;if(importController)importController.abort();importController=null;setImportBusy(false);importMessage('');}
 $('#show-photo').onchange=render;
-if(staticHosted&&!apiBase){$('#import-photo').disabled=true;$('#import-photo').textContent='图片导入待连接';$('#import-photo').title='图片抠图需要连接后端服务。';}
 $('#import-photo').onclick=()=>$('#photo-input').click();
 $('#photo-input').onchange=async e=>{
  const file=e.target.files[0];e.target.value='';if(!file)return;
  cancelImport();const version=importVersion;
  if(file.size>32*1024*1024){importMessage('请选择不超过 32 MB 的图片。',true);return;}
- if(location.protocol==='file:'){importMessage('图片导入需要启动本地服务后使用。',true);return;}
+ if(location.protocol==='file:'){importMessage('请通过网站或本地 HTTP 服务打开后导入图片。',true);return;}
  importController=new AbortController();setImportBusy(true);importMessage('正在提取图片轮廓…');
  try{
-  const response=await fetch(apiBase+'/api/segment',{method:'POST',headers:{'Content-Type':file.type||'application/octet-stream'},body:file,signal:importController.signal});
-  const result=await response.json();if(version!==importVersion)return;
-  if(!response.ok)throw new Error(result.error||'图片处理失败，请重试。');
+  const result=await segmentInBrowser(file,{signal:importController.signal,onStatus:text=>{if(version===importVersion)importMessage(text);}});if(version!==importVersion)return;
   if(!Array.isArray(result.points)||result.points.length>15||!validPolygon(result.points))throw new Error('未提取到有效轮廓，请换一张图片。');
   const p=result.placement;
   if(!p||!['x','y','width','height'].every(k=>Number.isFinite(p[k]))||p.width<=0||p.height<=0||!/^data:image\/png;base64,/.test(result.image))throw new Error('图片处理结果不完整，请重试。');
   const underlay=$('#photo-underlay');underlay.src=result.image;underlay.style.left=p.x/5+'%';underlay.style.top=p.y/5+'%';underlay.style.width=p.width/5+'%';underlay.style.height=p.height/5+'%';
   $('#show-photo').checked=true;seed=newSeed();useShape(result.points,{placement:p});importMessage('');
- }catch(error){if(error.name!=='AbortError'&&version===importVersion)importMessage(error instanceof TypeError?'无法连接图片处理服务，请确认服务已启动。':error.message,true);}
+ }catch(error){if(error.name!=='AbortError'&&version===importVersion)importMessage(error.message||'浏览器抠图失败，请重试。',true);}
  finally{if(version===importVersion){setImportBusy(false);importController=null;}}
 };
 // Rasterize only artwork layers: the DOM editor and toolbar never enter the export.
