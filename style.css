@@ -4,3 +4,5 @@
 
 button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:background .12s,color .12s,transform .12s}button.is-pressed:not(:disabled){background:#222;color:#fff;transform:scale(.95)}
 @media(hover:none),(pointer:coarse){#editor{opacity:0;transition:none}#canvas.dragging #editor,#canvas.drawing #editor{opacity:1}.handle-hit,.edge{pointer-events:all}}
+
+#download{position:absolute;top:12px;right:12px;z-index:3;display:grid;place-items:center;width:44px;height:44px;padding:10px;border:0;border-radius:50%;background:transparent;color:#555}#download svg{display:block}#download:disabled{cursor:wait}
