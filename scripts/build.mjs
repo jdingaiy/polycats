@@ -24,3 +24,5 @@ await build({entryPoints:[fileURLToPath(new URL('browser-segment-worker.js',root
 await writeFile(new URL('dist/polycats-demo.html',root),output);
 await writeFile(new URL('dist/index.html',root),output);
 console.log('Built dist/: drawing and PNG export, plus browser-only image import (assets/ required).');
+
+await import('./build-pose-review.mjs');

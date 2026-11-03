@@ -73,6 +73,19 @@ for(const [index,[source,name]] of studies.entries()){
  const points=base.points.map(deform);
  TEMPLATES.push({...base,id:source+'_study',name,points,face:deform(base.face),ears:base.ears.map(p=>p.map(deform)),paint:base.paint.map(([x,y,...rest])=>[...deform([x,y]),...rest]),shadows:base.shadows.map(p=>p.map(deform))});
 }
+// Hand-annotated studies from the user's reference batch, not trained image recognition.
+// Landmarks remain independent of coat selection; faceUp defines facial orientation.
+export const REFERENCE_POSES=[
+ {id:'upright_front',name:'正面直立',family:'upright',references:[1],points:[[152,45],[202,80],[280,79],[331,40],[340,103],[307,203],[321,280],[300,390],[263,446],[234,432],[204,442],[174,374],[169,271],[183,203]],face:[246,139],faceUp:[246,80],radius:52,ears:[],paint:[[243,298,43,92,.48],[205,234,15,37,.62],[282,233,15,37,.62]],shadows:[[[205,210],[207,253],[213,274]],[[283,210],[282,254],[277,275]]]},
+ {id:'seated_front',name:'正面端坐',family:'sit',references:[9,10,11],points:[[166,51],[208,82],[278,81],[321,48],[329,142],[302,196],[337,283],[345,383],[316,437],[272,443],[248,430],[222,444],[177,437],[151,384],[158,284],[184,197],[157,146]],face:[243,142],faceUp:[243,82],radius:52,ears:[],paint:[[244,278,39,72,.38],[218,394,17,25,.7],[275,395,17,24,.7]],shadows:[[[213,257],[212,330],[214,417]],[[275,257],[276,333],[277,416]]]},
+ {id:'splayed_sit',name:'后仰摊坐',family:'splay',references:[5],points:[[198,42],[236,68],[287,65],[325,37],[332,143],[343,230],[383,318],[462,397],[445,431],[354,397],[293,327],[218,330],[149,400],[54,435],[34,413],[104,350],[147,256],[181,181],[185,131]],face:[260,128],faceUp:[260,72],radius:48,ears:[],paint:[[255,268,67,60,.55],[325,229,17,45,.35]],shadows:[[[206,202],[187,248],[179,284]],[[309,201],[322,247],[327,280]]]},
+ {id:'raised_hindleg',name:'坐姿举后腿',family:'raised-leg',references:[12,23],points:[[176,67],[215,91],[269,89],[306,60],[316,154],[297,207],[321,262],[352,175],[382,70],[413,66],[431,96],[405,214],[360,303],[324,352],[329,414],[285,433],[228,425],[168,447],[105,429],[122,400],[168,365],[171,286],[153,228],[175,185]],face:[244,152],faceUp:[244,95],radius:45,ears:[],paint:[[245,300,46,65,.48],[388,117,17,30,.6],[208,388,23,15,.7]],shadows:[[[214,242],[201,303],[198,361]],[[284,244],[293,308],[288,374]]]},
+ {id:'loaf_front',name:'正面揣手',family:'loaf',references:[3,27],points:[[159,108],[200,141],[280,139],[322,101],[333,192],[353,244],[366,325],[337,387],[260,408],[181,401],[134,377],[121,319],[135,235],[151,194]],face:[242,214],faceUp:[242,147],radius:56,ears:[],paint:[[245,324,66,37,.4]],shadows:[[[158,326],[207,356],[285,355],[335,330]]]},
+ {id:'loaf_low',name:'贴地趴卧',family:'low-loaf',references:[28],points:[[54,288],[81,263],[120,273],[154,245],[177,282],[237,228],[326,207],[393,232],[438,283],[450,335],[421,371],[338,382],[254,373],[174,388],[100,379],[62,345]],face:[126,327],faceUp:[126,278],radius:39,ears:[],paint:[[304,300,88,43,.34]],shadows:[[[192,343],[270,353],[379,348]]]},
+ {id:'curled_sleep',name:'团身蜷睡',family:'curl-sleep',references:[7,19],points:[[64,259],[87,184],[145,135],[235,122],[333,146],[403,205],[437,280],[423,344],[371,388],[289,410],[197,402],[112,371],[68,321]],face:[359,306],faceUp:[376,260],radius:42,angle:20,ears:[],paint:[[227,263,83,60,.3]],shadows:[[[119,315],[190,354],[275,358],[330,332]]]},
+ {id:'pounce_front',name:'正面扑跃',family:'pounce',references:[25],points:[[72,136],[115,120],[153,174],[178,199],[173,89],[217,124],[277,125],[320,88],[315,193],[352,163],[389,112],[432,130],[444,174],[411,220],[350,261],[327,330],[285,386],[239,405],[188,382],[150,327],[131,264],[86,228],[56,181]],face:[245,204],faceUp:[245,131],radius:52,ears:[],paint:[[244,316,54,49,.42],[97,166,20,21,.6],[407,161,20,21,.6]],shadows:[[[176,261],[194,298],[206,338]],[[308,259],[290,299],[281,339]]]}
+];
+TEMPLATES.push(...REFERENCE_POSES);
 export const PRESETS=TEMPLATES.map(t=>({name:t.name,points:t.points}));
 const bounds=p=>{const xs=p.map(v=>v[0]),ys=p.map(v=>v[1]);return{x:Math.min(...xs),y:Math.min(...ys),w:Math.max(...xs)-Math.min(...xs),h:Math.max(...ys)-Math.min(...ys)};};
 const signedArea=p=>p.reduce((a,v,i)=>{const q=p[(i+1)%p.length];return a+v[0]*q[1]-v[1]*q[0];},0)/2;
@@ -99,10 +112,22 @@ function exactVertexFit(template,points,mirror,samples){
  }
  }return null;
 }
+// A conservative cue for tall, upright silhouettes with two distinct upper ears.
+// It supplies evidence only; ambiguous outlines retain unrestricted matching.
+function uprightHeadCue(points,box){
+ if(box.h<box.w*1.25)return null;
+ const tips=points.map((p,i)=>({p,i})).filter(({p,i})=>p[1]<box.y+box.h*.24&&p[1]<points[(i+points.length-1)%points.length][1]&&p[1]<points[(i+1)%points.length][1]);
+ for(const a of tips)for(const b of tips){if(a.i===b.i||Math.abs(a.p[0]-b.p[0])<box.w*.4)continue;
+  const arc=[];for(let i=(a.i+1)%points.length;i!==b.i;i=(i+1)%points.length)arc.push(points[i]);
+  if(!arc.length||arc.length>4||arc.some(p=>p[1]>box.y+box.h*.3))continue;
+  const valley=Math.max(...arc.map(p=>p[1]));if(valley-Math.max(a.p[1],b.p[1])<box.h*.035)continue;
+  return {x:(a.p[0]+b.p[0])/2,y:valley+box.h*.13};
+ }return null;
+}
 const matchCache=new Map();
 export function matchTemplates(points,lockedId=null){
  const key=JSON.stringify([points,lockedId]);if(matchCache.has(key))return matchCache.get(key);
- const box=bounds(points),target=sampleBoundary(points),n=target.length;
+ const box=bounds(points),target=sampleBoundary(points),n=target.length,headCue=uprightHeadCue(points,box);
  const mean=p=>p.reduce((a,v)=>[a[0]+v[0]/n,a[1]+v[1]/n],[0,0]);
  const tc=mean(target),norm=Math.hypot(box.w,box.h)||1;
  const candidates=[];
@@ -121,10 +146,15 @@ export function matchTemplates(points,lockedId=null){
   // Compare filled silhouettes too: a close perimeter alone can hide a wrong limb gap.
   const mapped=best.template.points.map(best.map),unionBox=bounds([...points,...mapped]);let intersection=0,union=0;
   for(let iy=0;iy<28;iy++)for(let ix=0;ix<28;ix++){const q=[unionBox.x+(ix+.5)*unionBox.w/28,unionBox.y+(iy+.5)*unionBox.h/28],u=inside(q,points),v=inside(q,mapped);if(u||v)union++;if(u&&v)intersection++;}
-  best.overlap=intersection/(union||1);best.score=best.fitCost+.08*(1-best.overlap);candidates.push(best);
+  best.overlap=intersection/(union||1);best.score=best.fitCost+.08*(1-best.overlap);
+  if(headCue&&best.error>.012&&!lockedId){
+   const face=best.map(best.template.face),angle=(best.angle+(best.mirror?-(best.template.angle||0):(best.template.angle||0)))*Math.PI/180;
+   best.headPenalty=.14*Math.hypot(face[0]-headCue.x,face[1]-headCue.y)/norm+.065*(1-Math.cos(angle));best.score+=best.headPenalty;
+  }
+  candidates.push(best);
  }
  candidates.sort((a,b)=>a.score-b.score);
- const result={candidates,box,weak:candidates[0].score>.105,ambiguous:candidates.length>1&&candidates[1].score-candidates[0].score<.012};
+ const result={candidates,box,headCue,weak:candidates[0].score>.105,ambiguous:candidates.length>1&&candidates[1].score-candidates[0].score<.012};
  if(matchCache.size>=32)matchCache.delete(matchCache.keys().next().value);matchCache.set(key,result);return result;
 }
 // Transfer landmarks with a bounded, local residual correction from the matched contour.
@@ -149,6 +179,7 @@ export function poseLayout(points,anchor=null,lockedId=null){
  // An unmatched silhouette still receives a visible face, explicitly marked as weak.
  let fallback=false;if(!best||best.r<Math.min(9,desired*.3)){fallback=true;const b=analysis.box;for(let y=b.y;y<b.y+b.h;y+=Math.max(3,b.h/35))for(let x=b.x;x<b.x+b.w;x+=Math.max(3,b.w/35))consider([x,y]);}
  const face=best||{x:expected[0],y:expected[1],r:1};face.angle=match.angle+(match.mirror?-(template.angle||0):(template.angle||0));
+ if(template.faceUp){const up=match.map(template.faceUp),center=match.map(template.face);face.angle=Math.atan2(up[0]-center[0],center[1]-up[1])*180/Math.PI;}
  const result={box:analysis.box,face,pose:template,match,analysis,fallback,expected,desired,map:p=>transfer(match,p)};
  if(layoutCache.size>=32)layoutCache.delete(layoutCache.keys().next().value);layoutCache.set(cacheKey,result);return result;
 }

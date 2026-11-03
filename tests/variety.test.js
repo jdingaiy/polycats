@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {TEMPLATES,COATS,coatFor,catSVG,softenPolygon,cornerOpenings,validPolygon,random,poseLayout,randomOutline,EXPRESSIONS,MARKINGS,naturalFaceFur} from '../cat.js';
 
 test('distinct poses, coat families and expression designs are available',()=>{
- assert.equal(TEMPLATES.length,50);assert.equal(new Set(TEMPLATES.map(t=>t.id)).size,50);
- assert.equal(new Set(TEMPLATES.map(t=>JSON.stringify(t.points))).size,50);
+ assert.equal(TEMPLATES.length,58);assert.equal(new Set(TEMPLATES.map(t=>t.id)).size,58);
+ assert.equal(new Set(TEMPLATES.map(t=>JSON.stringify(t.points))).size,58);
  assert.equal(COATS.length,12);
 });
 test('coat changes affect face pigment without changing the matched silhouette',()=>{
