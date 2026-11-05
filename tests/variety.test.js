@@ -55,17 +55,17 @@ test('random outlines vary direction and allow acute angles',()=>{
  assert.ok(acute>80);assert.equal(unique.size,150);assert.ok(diagonals/total>.7);assert.ok(concave>30,`Only ${concave} concave shapes`);
 });
 test('eyes can wink and close lightly; nine forehead patterns are selectable',()=>{
- const p=TEMPLATES[0].points;assert.equal(EXPRESSIONS.length,16);assert.equal(MARKINGS.length,9);
- const faces=EXPRESSIONS.map((_,i)=>{const svg=catSVG(p,31,null,.2,1,null,'british_blue',i,0);assert.equal((svg.match(/data-open-eye=/g)||[]).length,i===2?1:i===13?0:2);return svg.replace(/data-expression(?:-art)?="\d+"/g,'');});assert.equal(new Set(faces).size,16);
+ const p=TEMPLATES[0].points;assert.equal(EXPRESSIONS.length,12);assert.equal(MARKINGS.length,9);
+ const faces=EXPRESSIONS.map((_,i)=>{const svg=catSVG(p,31,null,.2,1,null,'british_blue',i,0);assert.equal((svg.match(/data-open-eye=/g)||[]).length,i===2?1:[0,11].includes(i)?0:2);return svg.replace(/data-expression(?:-art)?="\d+"/g,'');});assert.equal(new Set(faces).size,12);
 
  const profile=COATS.find(c=>c.id==='ginger'),marks=MARKINGS.map((_,i)=>naturalFaceFur(profile,31,i));assert.equal(new Set(marks).size,9);
 
 });
 
-test('eye and mouth combinations, tongue, tears and sweat vary independently',()=>{
- const combinations=new Set(),mouths=new Set();let tongues=0,tears=0,sweat=0;
- for(let seed=0;seed<80;seed++){const svg=catSVG(TEMPLATES[0].points,seed);const eye=svg.match(/data-expression="(.*?)"/)[1],mouth=svg.match(/data-mouth="(.*?)"/)[1];combinations.add(eye+':'+mouth);mouths.add(mouth);tongues+=svg.includes('data-tongue="true"');tears+=svg.includes('data-tears="true"');sweat+=svg.includes('data-sweat="true"');if(eye==='4')assert.equal(mouth,'0');}
- assert.ok(combinations.size>20);assert.equal(mouths.size,5);assert.ok(tongues>10&&tears>5&&sweat>5);
+test('named expressions keep their corresponding mouth and decorations',()=>{
+ const seen=new Set();
+ for(let seed=0;seed<80;seed++){const svg=catSVG(TEMPLATES[0].points,seed);const e=+svg.match(/data-expression="(.*?)"/)[1];seen.add(e);assert.equal(svg.includes('data-tears="true"'),e===6);assert.equal(svg.includes('data-sweat="true"'),e===7);assert.ok(!svg.includes('data-tongue="true"'));}
+ assert.equal(seen.size,12);
 });
 
 test('natural fur uses filled tapered pigment, with a feathered face mask and clipped edge shade',()=>{
