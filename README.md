@@ -60,3 +60,6 @@ npm start
 
 
 最新表情修订为 `catalog-v5.html` / `expressions-v5.svg`：保留编号 02、12、13、16 原样，其余去掉大面积浅色眼底，以小色斑、眼缝和嘴形表达情绪。仍待用户确认。
+
+
+V6：`catalog-v6.html` 可切换上一轮柔焦小眼与新增眼底/瞳孔版本；新增 7 类开放眼形（柔方、立眼、杏仁、斜眼、下垂、半睁、叶形）及 6 种可选配色。`expressions-v6.svg`、`eye-colors-v6.svg` 为实际渲染对照。仍不合入 main。

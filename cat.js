@@ -201,7 +201,7 @@ export const COATS=[
  {id:'white',name:'奶油白猫',pattern:'solid',base:'#eee4cf',shade:'#c6b8a2',light:'#fff7e7',ink:'#6c5f52',iris:'#9fb7b0',patches:[],face:'solid'},
  {id:'black',name:'乌云黑猫',pattern:'solid',base:'#2a2f36',shade:'#141b23',light:'#575f69',ink:'#9aa0a5',iris:'#cfb24a',patches:[],face:'solid'},
 ];
-export const EXPRESSIONS=['乖巧','轻闭眼','眨眼','小惊讶','好奇','委屈','流泪','流汗','瞪大眼','大小眼困惑','嫌弃侧目','炸毛生气','困到睁不开','开心眯眼','抬眼期待','呆滞豆眼'];
+export const EXPRESSIONS=['乖巧','轻闭眼','眨眼','小惊讶','好奇','委屈','流泪','流汗','瞪大眼','大小眼困惑','嫌弃侧目','炸毛生气','困到睁不开','开心眯眼','抬眼期待','放空半睁'];
 export const MARKINGS=['自然毛色','宽额分纹','细额分纹','不对称额纹','低额纹','高额纹','细碎额纹','分叉额纹','疏额纹'];
 export function coatFor(seed,mode='auto'){
  return COATS.find(c=>c.id===mode)||COATS[Math.floor(random(seed^0x716fc3)()*COATS.length)];
@@ -308,7 +308,9 @@ export function naturalBodyFur(profile,seed,template,project=p=>p){
  return `<g data-body-fur="torso-aligned">${result}</g>`;
 }
 
-export function catSVG(points,seed=1,anchor=null,asymmetry=.75,detail=1,lockedId=null,coatMode='auto',expressionMode='auto',markingMode='auto'){const rng=random(seed),profile=coatFor(seed,coatMode),coat=profile.base,dark=profile.ink,cream=profile.light,iris=profile.iris,{box:b,face:f,pose,match,map}=poseLayout(points,anchor,lockedId),d=pathOf(points),id='cat'+(seed>>>0),r=f.r,x=f.x,y=f.y;
+export const EYE_PALETTES=[{id:'ivory',name:'象牙白',color:'#f0ebd9'},{id:'sage',name:'鼠尾草绿',color:'#c4d6aa'},{id:'blue',name:'雾蓝',color:'#bfd4da'},{id:'amber',name:'浅琥珀',color:'#e6c787'},{id:'lilac',name:'灰紫',color:'#d1c7dc'},{id:'mint',name:'薄荷青',color:'#b9d6c8'}];
+
+export function catSVG(points,seed=1,anchor=null,asymmetry=.75,detail=1,lockedId=null,coatMode='auto',expressionMode='auto',markingMode='auto',eyePaletteMode='auto'){const rng=random(seed),profile=coatFor(seed,coatMode),coat=profile.base,dark=profile.ink,cream=profile.light,iris=profile.iris,{box:b,face:f,pose,match,map}=poseLayout(points,anchor,lockedId),d=pathOf(points),id='cat'+(seed>>>0),r=f.r,x=f.x,y=f.y;
   const personality=random(seed^0xabcdef),amount=Math.max(0,Math.min(1,asymmetry));
   const tilt=f.angle+(personality()-.5)*24*amount,skew=(personality()-.5)*18*amount;
   // Stable size personality: broad between-cat range, restrained left/right mismatch.
@@ -331,18 +333,25 @@ export function catSVG(points,seed=1,anchor=null,asymmetry=.75,detail=1,lockedId
   // Reference style: diffuse airbrushed pigment, no rim, reflective bead or cut-out lid.
   // Dimensions in the safe head coordinate frame: tiny dots through face-filling eyes.
   const eyeDesigns=[
-   [9,12,43,-12,'bean'],[30,14,48,-10,'slit'],[10,14,46,-13,'bean'],
-   [12,17,47,-18,'bean'],[22,14,49,-14,'almond'],[17,14,46,-12,'almond'],
-   [14,13,46,-10,'almond'],[10,14,49,-17,'bean'],[19,23,50,-22,'bean'],
-   [17,20,49,-16,'bean'],[30,18,50,-12,'slant'],[55,51,54,-16,'slant'],
-   [38,16,49,-10,'slit'],[25,20,47,-13,'closed'],[11,17,44,-23,'bean'],[7,9,44,-13,'bean']
+   [21,24,45,-13,'softbox'],[31,18,48,-11,'half'],[21,34,46,-15,'upright'],
+   [24,37,47,-19,'upright'],[34,23,49,-14,'almond'],[28,29,47,-14,'droop'],
+   [27,22,46,-12,'droop'],[24,25,49,-17,'softbox'],[29,40,50,-23,'upright'],
+   [28,32,49,-17,'mixed'],[36,23,50,-13,'slant'],[39,31,51,-16,'slant'],
+   [38,16,49,-10,'slit'],[25,20,47,-13,'closed'],[23,37,45,-23,'leaf'],[20,22,44,-13,'half']
   ];
   const [designRx,designRy,spacing,eyeY,designShape]=eyeDesigns[expression];
   const bean='M-.65,-.8 C-.2,-1.2 .8,-.9 .87,-.12 C1,.55 .52,1.05 -.2,.85 C-.95,.75 -1.03,-.16 -.65,-.8Z';
-  const almond='M-1,.12 C-.52,-.64 .29,-.76 1,-.22 C.68,.49 -.2,.78 -1,.12Z';
-  const slant='M-1,-.72 Q0,-.38 1,.04 C.85,1 -.65,1 -1,-.72Z';
-  const droop='M-.8,-.65 C-.45,-1.12 .5,-1.08 .86,-.32 C1.08,.3 .83,.9 .25,.96 C-.45,1.08 -1.1,.36 -.8,-.65Z';
-  const sleepy='M-1,-.06 C-.45,-.33 .46,-.24 1,-.02 C.37,.3 -.53,.32 -1,-.06Z';
+  const shapes={
+   softbox:'M-.88,-.62 Q-.65,-.94 .06,-.86 Q.88,-.86 .9,-.32 L.84,.56 Q.42,.95 -.23,.83 Q-.94,.72 -.94,.12Z',
+   upright:'M-.16,-1 C.39,-.94 .87,-.42 .79,.17 C.73,.74 .19,1.03 -.24,.88 C-.86,.64 -.85,-.18 -.16,-1Z',
+   almond:'M-1,.19 C-.52,-.7 .35,-.85 1,-.22 C.67,.6 -.25,.8 -1,.19Z',
+   slant:'M-1,-.72 Q0,-.38 1,.04 C.85,1 -.65,1 -1,-.72Z',
+   droop:'M-1,-.09 Q-.13,-.57 .78,-.8 C1.1,-.06 .65,.75 .05,.83 C-.64,.84 -.94,.51 -1,-.09Z',
+   half:'M-.97,-.35 Q0,-.25 .94,-.37 L.86,.25 Q.68,.9 -.1,.87 Q-.91,.75 -.97,-.35Z',
+   leaf:'M.35,-1 C1,-.31 .91,.52 -.34,1 C-.98,.46 -.89,-.48 .35,-1Z',
+   slit:'M-1,-.06 C-.45,-.33 .46,-.24 1,-.02 C.37,.3 -.53,.32 -1,-.06Z'
+  };
+  const eyePalette=EYE_PALETTES.find(p=>p.id===eyePaletteMode)||EYE_PALETTES[Math.floor(random(seed^0x784b)()*EYE_PALETTES.length)];
   for(const sign of[-1,1]){
    const ex=sign*spacing,ey=eyeY+sign*eyeLift/r*42;
    const size=eyeScale[sign===-1?0:1]*(expression===9?(sign===-1?1.12:.55):1);
@@ -352,26 +361,27 @@ export function catSVG(points,seed=1,anchor=null,asymmetry=.75,detail=1,lockedId
    if(closed){
     eyes+=`<g data-eye-size="${(rx/20).toFixed(3)}" filter="url(#${id}-eye-ink)">`+line(expression===2?`M${ex+23},${ey-20} L${ex-20},${ey+6} L${ex+22},${ey+10}`:`M${ex-28},${ey+6} Q${ex},${ey-25} ${ex+28},${ey+6}`,4)+'</g>';
    }else{
-    const shape=({slit:sleepy,slant,almond,droop,bean})[designShape]||bean;
+    const shapeName=designShape==='mixed'?(sign===-1?'upright':'almond'):designShape;
+    const shape=shapes[shapeName];
     const angle=expression===11?0:expression===10?-sign*8:expression===5?sign*19:expression===14?-sign*13:sign*7;
     // Irregular colored eye fields and directional pupils; both remain airbrushed.
-    const colored=expression===11;
-    const eyeColor=[4,11].includes(expression)?'#dbe9ad':profile.id==='british_blue'?'#dce9b4':profile.id==='white'?'#d4e9d9':'#e7e99e';
+    const colored=expression!==12;
+    const eyeColor=eyePalette.color;
     const pupilX=expression===4?rx*.42:expression===10?-rx*.3:expression===14?-rx*.3:expression===9?-rx*.18:expression===11?rx*.24:0;
     const pupilY=[8,14].includes(expression)?-ry*.4:expression===5?-ry*.15:expression===11?-ry*.05:0;
-    eyes+=`<g data-open-eye="${sign}" data-eye-size="${(rx/20).toFixed(3)}" data-eye-shape="${shape===bean?'bean':shape===almond?'almond':shape===slant?'slant':'slit'}" transform="translate(${ex} ${ey}) rotate(${angle}) scale(${sign===1&&[10,11].includes(expression)?-1:1} 1)"><g filter="url(#${id}-eye-ink)">`;
-    eyes+=`<path d="${shape}" transform="scale(${rx} ${ry})" fill="${colored?eyeColor:profile.id==='black'?iris:dark}" opacity=".9"/>`;
+    eyes+=`<g data-open-eye="${sign}" data-eye-size="${(rx/20).toFixed(3)}" data-eye-shape="${shapeName}" data-eye-palette="${eyePalette.id}" transform="translate(${ex} ${ey}) rotate(${angle}) scale(${sign===1&&[10,11].includes(expression)?-1:1} 1)"><g filter="url(#${id}-eye-ink)">`;
+    eyes+=`<defs><linearGradient id="${eid}-shade" x1="0" y1="0" x2=".3" y2="1"><stop stop-color="${eyeColor}"/><stop offset=".55" stop-color="${eyeColor}"/><stop offset="1" stop-color="#faf4e1"/></linearGradient></defs><path data-eye-ground="${colored}" d="${shape}" transform="scale(${rx} ${ry})" fill="${colored?`url(#${eid}-shade)`:profile.id==='black'?iris:dark}" opacity=".94"/>`;
     if(colored){
      eyes+=`<defs><clipPath id="${eid}-clip"><path d="${shape}" transform="scale(${rx} ${ry})"/></clipPath></defs><g clip-path="url(#${eid}-clip)">`;
-     const pupilW=rx*([10,11].includes(expression)?.24:expression===8?.24:.28);
-     const pupilH=ry*([10,11].includes(expression)?.4:expression===8?.32:.42);
+     const pupilW=rx*([10,11].includes(expression)?.18:[0,4,14,15].includes(expression)?.14:.24);
+     const pupilH=ry*([10,11].includes(expression)?.58:expression===8?.45:.63);
      eyes+=`<path d="${bean}" transform="translate(${pupilX} ${pupilY}) scale(${pupilW} ${pupilH})" fill="#292b25" opacity=".94"/></g>`;
     }
     eyes+='</g></g>';
    }
    if(tears)emotion+=`<g opacity=".65">`+oval(ex,ey+ry+12,3.5,10,'#afd0dc')+'</g>';
   }
-  if(expression===5||expression===6)emotion+=line('M-61,-28 Q-48,-38 -34,-35 M34,-35 Q48,-38 61,-28',2.7);
+  if(expression===5||expression===6)emotion+=line('M-61,-39 Q-48,-49 -34,-46 M34,-46 Q48,-49 61,-39',2.7);
   const smile='M0,34 C-1,48 -15,49 -16,40 M0,34 C1,48 16,49 17,40';
   mouth=line(smile,4);
   if(mouthChoice===1)mouth=line('M0,34 C-2,55 -25,51 -25,36 M0,34 C2,55 25,51 25,36',4);
