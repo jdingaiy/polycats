@@ -95,16 +95,14 @@ $('#download').onclick=async()=>{
   if(frame){cancelAnimationFrame(frame);frame=0;render();button.disabled=true;}
   const artwork=canvas.querySelector('svg').cloneNode(true);artwork.querySelector('#editor')?.remove();
   artwork.setAttribute('width','1000');artwork.setAttribute('height','1000');
-  const visible=!$('#photo-underlay').hidden;
-  const photoSource=$('#photo-underlay').src,placement=importedPhoto?{...importedPhoto.placement}:null;
   const surface=document.createElement('canvas');surface.width=surface.height=1000;
-  const context=surface.getContext('2d');context.scale(2,2);context.fillStyle='#f0f0f0';context.fillRect(0,0,500,500);
-  if(visible&&placement){const photo=await loadExportImage(photoSource);context.drawImage(photo,placement.x,placement.y,placement.width,placement.height);context.globalAlpha=1;}
+  // A new canvas is transparent; export only the cat artwork, without the board or photo underlay.
+  const context=surface.getContext('2d');context.scale(2,2);
   const source=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(artwork)],{type:'image/svg+xml;charset=utf-8'}));
   try{const image=await loadExportImage(source);context.drawImage(image,0,0,500,500);}finally{URL.revokeObjectURL(source);}
   const blob=await new Promise((resolve,reject)=>surface.toBlob(value=>value?resolve(value):reject(new Error('无法生成 PNG，请重试。')),'image/png'));
   const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='polycats.png';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
-  hint('已导出 PNG。');
+  hint('已导出透明背景 PNG。');
  }catch(error){hint(error.message||'导出失败，请重试。');}
  finally{button.disabled=drawing;button.removeAttribute('aria-busy');}
 };
