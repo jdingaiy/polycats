@@ -349,8 +349,16 @@ export function catSVG(points,seed=1,anchor=null,asymmetry=.75,detail=1,lockedId
    const closed=expression===0||expression===11||(expression===2&&sign===1);
    const eid=`${id}-pigment-${side}`;
    if(closed){
-    const d=expression===0?`M${ex-35},${ey+4} Q${ex-4},${ey-28} ${ex+34},${ey+3}`:expression===11?`M${ex-37},${ey+2} Q${ex},${ey+6} ${ex+35},${ey+2}`:`M${ex+28},${ey-18} Q${ex+4},${ey-13} ${ex-25},${ey+7} L${ex+28},${ey+6}`;
-    eyes+=`<g data-closed-eye="${side}" filter="url(#${id}-eye-ink)">${line(d,4.8)}</g>`;
+    // Filled eyelid silhouettes taper to a point at both ends.
+    const d=expression===0
+     ?`M${ex-35},${ey+4} Q${ex-4},${ey-34} ${ex+34},${ey+3} Q${ex-3},${ey-18} ${ex-35},${ey+4}Z`
+     :expression===11
+      ?`M${ex-37},${ey+2} Q${ex},${ey-3} ${ex+35},${ey+2} Q${ex},${ey+13} ${ex-37},${ey+2}Z`
+      :`M${ex+28},${ey-18} Q${ex+4},${ey-13} ${ex-25},${ey+7} L${ex+28},${ey+6}`;
+    const eyelid=expression===0||expression===11
+     ?`<path data-tapered-eyelid="true" d="${d}" fill="${dark}"/>`
+     :line(d,4.8);
+    eyes+=`<g data-closed-eye="${side}" filter="url(#${id}-eye-ink)">${eyelid}</g>`;
     continue;
    }
    let kind=[null,'half','wide','wide','gaze','worried','worried','half','wide','half','angry'][expression];
