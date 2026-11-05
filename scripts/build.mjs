@@ -26,3 +26,7 @@ await writeFile(new URL('dist/index.html',root),output);
 console.log('Built dist/: drawing and PNG export, plus browser-only image import (assets/ required).');
 
 await import('./build-pose-review.mjs');
+
+await import('./build-character-review.mjs');
+await mkdir(new URL('dist/review/',root),{recursive:true});
+for(const file of ['index.html','poses.svg','expressions.svg'])await copyFile(new URL('review/'+file,root),new URL('dist/review/'+file,root));

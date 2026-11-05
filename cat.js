@@ -86,6 +86,8 @@ export const REFERENCE_POSES=[
  {id:'pounce_front',name:'正面扑跃',family:'pounce',references:[25],points:[[72,136],[115,120],[153,174],[178,199],[173,89],[217,124],[277,125],[320,88],[315,193],[352,163],[389,112],[432,130],[444,174],[411,220],[350,261],[327,330],[285,386],[239,405],[188,382],[150,327],[131,264],[86,228],[56,181]],face:[245,204],faceUp:[245,131],radius:52,ears:[],paint:[[244,316,54,49,.42],[97,166,20,21,.6],[407,161,20,21,.6]],shadows:[[[176,261],[194,298],[206,338]],[[308,259],[290,299],[281,339]]]}
 ];
 TEMPLATES.push(...REFERENCE_POSES);
+export const STUDY_POSES=[{"id": "study_arch", "name": "高拱背炸毛", "points": [[60, 330], [85, 230], [155, 125], [235, 105], [305, 145], [332, 225], [352, 190], [388, 232], [437, 200], [428, 295], [453, 325], [425, 355], [409, 425], [389, 425], [380, 342], [342, 345], [327, 424], [307, 422], [311, 300], [272, 225], [210, 190], [160, 240], [129, 335], [117, 423], [95, 421], [100, 335]], "face": [387, 290], "faceUp": [387, 251], "radius": 39, "ears": [], "paint": [[223, 190, 65, 40, 0.28]], "shadows": [[[130, 274], [167, 185], [236, 161]]]}, {"id": "study_long", "name": "超长条探头", "points": [[36, 223], [100, 204], [225, 207], [324, 198], [341, 118], [378, 160], [433, 130], [426, 228], [458, 253], [438, 288], [414, 292], [410, 365], [387, 365], [382, 290], [150, 297], [135, 365], [110, 365], [108, 295], [62, 292], [39, 271]], "face": [385, 235], "faceUp": [385, 195], "radius": 40, "ears": [], "paint": [[239, 265, 105, 20, 0.38]], "shadows": [[[136, 279], [246, 284], [350, 270]]]}, {"id": "study_roll", "name": "侧躺伸懒腰", "points": [[40, 318], [89, 289], [145, 283], [183, 267], [192, 200], [230, 232], [282, 207], [292, 275], [328, 297], [375, 282], [430, 254], [455, 272], [428, 301], [360, 331], [308, 337], [278, 376], [195, 390], [123, 370], [72, 358]], "face": [240, 295], "faceUp": [240, 256], "radius": 39, "ears": [], "paint": [[199, 347, 70, 27, 0.42]], "shadows": [[[129, 333], [183, 362], [260, 350]]]}, {"id": "study_slink", "name": "低头潜行", "points": [[50, 152], [73, 139], [103, 206], [168, 205], [252, 225], [319, 265], [344, 227], [365, 277], [418, 260], [435, 321], [465, 341], [436, 369], [390, 374], [378, 419], [355, 418], [356, 360], [274, 322], [205, 295], [191, 407], [166, 408], [163, 291], [109, 268], [79, 228]], "face": [390, 325], "faceUp": [390, 291], "radius": 34, "ears": [], "paint": [[222, 273, 80, 20, 0.34]], "shadows": [[[104, 240], [201, 258], [297, 292]]]}, {"id": "study_ball", "name": "滚圆缩爪", "points": [[91, 300], [101, 219], [140, 159], [192, 125], [204, 77], [243, 111], [286, 103], [324, 65], [343, 139], [388, 176], [422, 245], [423, 315], [391, 371], [330, 404], [247, 421], [164, 403], [116, 361]], "face": [271, 203], "faceUp": [271, 141], "radius": 62, "ears": [], "paint": [[249, 333, 69, 47, 0.45]], "shadows": [[[146, 338], [203, 380], [302, 383]]]}, {"id": "study_tall", "name": "细腿大头", "points": [[130, 75], [190, 120], [283, 110], [344, 58], [365, 156], [341, 220], [299, 244], [288, 321], [305, 424], [281, 433], [258, 334], [238, 326], [220, 434], [195, 429], [208, 314], [195, 249], [147, 229], [114, 165]], "face": [239, 182], "faceUp": [239, 117], "radius": 65, "ears": [], "paint": [[247, 289, 24, 39, 0.4]], "shadows": [[[221, 265], [223, 302], [207, 418]]]}, {"id": "study_peek", "name": "歪头探身", "points": [[95, 407], [117, 338], [182, 309], [214, 259], [191, 222], [139, 214], [101, 177], [91, 99], [150, 130], [224, 112], [272, 60], [292, 153], [280, 208], [255, 241], [282, 299], [322, 336], [377, 342], [428, 310], [451, 324], [426, 363], [363, 389], [291, 383], [247, 355], [219, 395], [166, 424]], "face": [198, 171], "faceUp": [198, 119], "radius": 52, "ears": [], "paint": [[210, 351, 46, 37, 0.38]], "shadows": [[[255, 298], [274, 343], [327, 363]]]}, {"id": "study_splat", "name": "摊开四爪", "points": [[60, 119], [91, 100], [159, 165], [191, 170], [187, 97], [223, 128], [277, 126], [315, 89], [312, 173], [346, 168], [413, 104], [442, 124], [409, 181], [350, 221], [333, 282], [370, 339], [422, 394], [401, 421], [331, 375], [291, 329], [247, 344], [204, 328], [161, 378], [91, 420], [68, 397], [125, 343], [163, 283], [148, 224], [91, 183]], "face": [250, 204], "faceUp": [250, 156], "radius": 48, "ears": [], "paint": [[246, 281, 49, 42, 0.48]], "shadows": [[[185, 259], [211, 299], [247, 312], [288, 293]]]}];
+TEMPLATES.push(...STUDY_POSES);
 export const PRESETS=TEMPLATES.map(t=>({name:t.name,points:t.points}));
 const bounds=p=>{const xs=p.map(v=>v[0]),ys=p.map(v=>v[1]);return{x:Math.min(...xs),y:Math.min(...ys),w:Math.max(...xs)-Math.min(...xs),h:Math.max(...ys)-Math.min(...ys)};};
 const signedArea=p=>p.reduce((a,v,i)=>{const q=p[(i+1)%p.length];return a+v[0]*q[1]-v[1]*q[0];},0)/2;
@@ -199,7 +201,7 @@ export const COATS=[
  {id:'white',name:'奶油白猫',pattern:'solid',base:'#eee4cf',shade:'#c6b8a2',light:'#fff7e7',ink:'#6c5f52',iris:'#9fb7b0',patches:[],face:'solid'},
  {id:'black',name:'乌云黑猫',pattern:'solid',base:'#2a2f36',shade:'#141b23',light:'#575f69',ink:'#9aa0a5',iris:'#cfb24a',patches:[],face:'solid'},
 ];
-export const EXPRESSIONS=['乖巧','轻闭眼','眨眼','小惊讶','好奇','委屈','流泪','流汗'];
+export const EXPRESSIONS=['乖巧','轻闭眼','眨眼','小惊讶','好奇','委屈','流泪','流汗','瞪大眼','大小眼困惑','嫌弃侧目','炸毛生气','困到睁不开','开心眯眼','星星眼期待','呆滞豆眼'];
 export const MARKINGS=['自然毛色','宽额分纹','细额分纹','不对称额纹','低额纹','高额纹','细碎额纹','分叉额纹','疏额纹'];
 export function coatFor(seed,mode='auto'){
  return COATS.find(c=>c.id===mode)||COATS[Math.floor(random(seed^0x716fc3)()*COATS.length)];
@@ -309,25 +311,48 @@ export function naturalBodyFur(profile,seed,template,project=p=>p){
 export function catSVG(points,seed=1,anchor=null,asymmetry=.75,detail=1,lockedId=null,coatMode='auto',expressionMode='auto',markingMode='auto'){const rng=random(seed),profile=coatFor(seed,coatMode),coat=profile.base,dark=profile.ink,cream=profile.light,iris=profile.iris,{box:b,face:f,pose,match,map}=poseLayout(points,anchor,lockedId),d=pathOf(points),id='cat'+(seed>>>0),r=f.r,x=f.x,y=f.y;
   const personality=random(seed^0xabcdef),amount=Math.max(0,Math.min(1,asymmetry));
   const tilt=f.angle+(personality()-.5)*24*amount,skew=(personality()-.5)*18*amount;
-  const eyeScale=[1-(.15+personality()*.22)*amount,1+personality()*.12*amount];
+  // Stable size personality: broad between-cat range, restrained left/right mismatch.
+  const eyeSize=.65+personality()*1.45;
+  const eyeScale=[1-(.08+personality()*.25)*amount,1+personality()*.18*amount];
+  if(personality()<.5)eyeScale.reverse();
   const eyeLift=(personality()-.5)*r*.22*amount,noseShift=(personality()-.5)*r*.2*amount;
   const faceTransform=`rotate(${tilt} ${x} ${y}) translate(${x} ${y}) skewX(${skew}) translate(${-x} ${-y})`;
   const ellipse=(cx,cy,rx,ry,fill,extra='')=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fill}" ${extra}/>`;
   let marks=naturalBodyFur(profile,seed,pose,map),faceMarks='',forehead='';
   const ears=pose.ears.map(p=>`<path d="${pathOf(p.map(map))}" fill="#d5a29a" opacity=".35"/>`).join('');
-  const faceRandom=random(seed^0x935a),expression=expressionMode==='auto'?Math.floor(faceRandom()*8):Number(expressionMode)%8;
-  const mouthChoice=expression===4?0:expressionMode==='auto'?Math.floor(faceRandom()*5):Number(expressionMode)%5;
-  const tongue=faceRandom()<.38,tears=expression===6||faceRandom()<.12,sweat=expression===7||faceRandom()<.12;
+  const faceRandom=random(seed^0x935a),expression=expressionMode==='auto'?Math.floor(faceRandom()*EXPRESSIONS.length):((Number(expressionMode)%EXPRESSIONS.length)+EXPRESSIONS.length)%EXPRESSIONS.length;
+  const mouthChoice=expression===4?0:expressionMode==='auto'?Math.floor(faceRandom()*5):[0,0,0,2,0,3,3,2,2,4,4,3,2,1,0,0][expression];
+  const tongue=expressionMode==='auto'?faceRandom()<.26:false,tears=expression===6||(expressionMode==='auto'&&faceRandom()<.12),sweat=expression===7||(expressionMode==='auto'&&faceRandom()<.12);
   const mark=markingMode==='auto'?Math.floor(random(seed^0x2c58)()*MARKINGS.length):Math.max(0,Math.min(MARKINGS.length-1,Number(markingMode)));
   faceMarks=`<g data-fur-model="anatomical" transform="translate(${x} ${y}) scale(${r})">${naturalFaceFur(profile,seed,mark)}</g>`;
   const line=(d,width=4,color=dark)=>`<path d="${d}" stroke="${color}" stroke-width="${width}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
   const oval=(cx,cy,rx,ry,color)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${color}"/>`;
   let eyes='',mouth='',emotion='';
-  for(const sign of[-1,1]){const ex=sign*42,ey=-7+sign*eyeLift/r*70,closed=(expression===2&&sign===1),height=expression===1?7:expression===3?15:12;
-   if(closed)eyes+=line(`M${ex-11},${ey} Q${ex},${ey+7} ${ex+11},${ey}`,3);
-   else{eyes+=`<g data-open-eye="${sign}">`+oval(ex,ey,13,height+2,dark)+oval(ex,ey,10,height,iris)+oval(ex+(expression===4?4:0),ey+1,expression===3?3:5,height*.8,'#242722')+oval(ex-3,ey-5,2.2,2.2,'#fff4df')+'</g>';}
-   if(expression===5||tears)eyes+=line(`M${ex-sign*8},-28 L${ex+sign*9},-23`,2.5);
-   if(tears)emotion+=oval(ex,ey+25,3.5,12,'#afd0dc');
+  // Eyes stay inside the safe facial disk; lids and gaze carry emotion as well as size.
+  const emotionSize={3:1.6,8:2.25,9:1.7,10:1.4,11:1.5,12:1.25,13:1.5,14:2.15,15:.48};
+  for(const sign of[-1,1]){
+   const ex=sign*36,ey=-12+sign*eyeLift/r*45;
+   const size=(emotionSize[expression]||eyeSize)*eyeScale[sign===-1?0:1]*(expression===9?(sign===-1?1.25:.55):1);
+   const rx=Math.min(35,20*size),ry=Math.min(39,(expression===1?6:22)*size);
+   const closed=(expression===2&&sign===1)||expression===13;
+   const eyeID=`${id}-eye-${sign===-1?'l':'r'}`;
+   if(closed){eyes+=`<g data-eye-size="${size.toFixed(3)}">`+line(`M${ex-18},${ey+5} Q${ex},${ey-15} ${ex+18},${ey+5}`,3.5)+'</g>';}
+   else{
+    const pupilW=[3,8,14].includes(expression)?rx*.52:rx*(expression===10?.19:.25);
+    const gaze=expression===4?rx*.3:expression===10?-rx*.38:0;
+    eyes+=`<g data-open-eye="${sign}" data-eye-size="${size.toFixed(3)}"><defs><radialGradient id="${eyeID}-iris" cx="38%" cy="30%"><stop stop-color="#f2f4bc"/><stop offset=".5" stop-color="${iris}"/><stop offset="1" stop-color="${profile.shade}"/></radialGradient><clipPath id="${eyeID}"><ellipse cx="${ex}" cy="${ey}" rx="${rx}" ry="${ry}"/></clipPath></defs>`;
+    eyes+=oval(ex,ey,rx+1,ry+1,dark)+oval(ex,ey,rx,ry,`url(#${eyeID}-iris)`);
+    eyes+=`<g clip-path="url(#${eyeID})">`+oval(ex+gaze,ey+1,pupilW,ry*.9,'#242722')+oval(ex-rx*.22,ey-ry*.35,Math.max(1.4,rx*.15),Math.max(1.4,rx*.15),'#fff8e9');
+    if(expression===14){eyes+=`<path d="M${ex},${ey-12} l3,8 8,3 -8,3 -3,8 -3,-8 -8,-3 8,-3Z" fill="#fff9df"/>`;}
+    if([10,11,12].includes(expression)){
+     const slope=expression===11?-sign*13:expression===10?sign*4:0,lidY=expression===12?ey+ry*.48:ey-ry*.12;
+     eyes+=`<path d="M${ex-rx-3},${ey-ry-4} H${ex+rx+3} V${lidY+slope} L${ex-rx-3},${lidY-slope}Z" fill="${coat}"/>`;
+     eyes+=line(`M${ex-rx},${lidY-slope} L${ex+rx},${lidY+slope}`,2.5);
+    }
+    eyes+='</g></g>';
+   }
+   if(expression===5||tears)eyes+=line(`M${ex-sign*9},-38 L${ex+sign*9},-29`,2.5);
+   if(tears)emotion+=oval(ex,ey+ry+12,3.5,11,'#afd0dc');
   }
   const smile='M0,34 C-1,51 -22,51 -21,39 M0,34 C1,51 22,51 21,39';
   mouth=line(smile,4);
@@ -335,6 +360,10 @@ export function catSVG(points,seed=1,anchor=null,asymmetry=.75,detail=1,lockedId
   if(mouthChoice===2)mouth=oval(0,46,6,8,dark);
   if(mouthChoice===3)mouth=line('M-13,48 Q0,35 13,48',3.5);
   if(mouthChoice===4)mouth=line('M0,34 C-1,51 -22,51 -21,39 M0,34 Q5,55 23,38',3.5);
+  if(expression===11)mouth=line('M-12,48 Q0,38 12,48',3.5);
+  if(expression===12)mouth=oval(0,46,5,7,dark);
+  if(expression===13)mouth=line('M-17,40 Q0,66 17,40',4);
+  if(expression===15)mouth=line('M-7,46 L7,46',3);
   if(tongue)mouth=oval(5,51,7,10,'#d9939c')+mouth;
   if(sweat)emotion+=`<path d="M73,-35 Q56,-11 69,-8 Q84,-6 73,-35Z" fill="#afd0dc"/>`;
   const expressionArt=`<g data-expression-art="${expression}" transform="translate(${x} ${y}) scale(${r/100})">${emotion}${eyes}${mouth}</g>`;

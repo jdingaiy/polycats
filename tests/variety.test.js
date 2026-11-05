@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {TEMPLATES,COATS,coatFor,catSVG,softenPolygon,cornerOpenings,validPolygon,random,poseLayout,randomOutline,EXPRESSIONS,MARKINGS,naturalFaceFur} from '../cat.js';
 
 test('distinct poses, coat families and expression designs are available',()=>{
- assert.equal(TEMPLATES.length,58);assert.equal(new Set(TEMPLATES.map(t=>t.id)).size,58);
- assert.equal(new Set(TEMPLATES.map(t=>JSON.stringify(t.points))).size,58);
+ assert.equal(TEMPLATES.length,66);assert.equal(new Set(TEMPLATES.map(t=>t.id)).size,66);
+ assert.equal(new Set(TEMPLATES.map(t=>JSON.stringify(t.points))).size,66);
  assert.equal(COATS.length,12);
 });
 test('coat changes affect face pigment without changing the matched silhouette',()=>{
@@ -55,8 +55,8 @@ test('random outlines vary direction and allow acute angles',()=>{
  assert.ok(acute>80);assert.equal(unique.size,150);assert.ok(diagonals/total>.7);assert.ok(concave>30,`Only ${concave} concave shapes`);
 });
 test('eyes can wink and close lightly; nine forehead patterns are selectable',()=>{
- const p=TEMPLATES[0].points;assert.equal(EXPRESSIONS.length,8);assert.equal(MARKINGS.length,9);
- const faces=EXPRESSIONS.map((_,i)=>{const svg=catSVG(p,31,null,.2,1,null,'british_blue',i,0);assert.equal((svg.match(/data-open-eye=/g)||[]).length,i===2?1:2);return svg.replace(/data-expression(?:-art)?="\d+"/g,'');});assert.equal(new Set(faces).size,8);
+ const p=TEMPLATES[0].points;assert.equal(EXPRESSIONS.length,16);assert.equal(MARKINGS.length,9);
+ const faces=EXPRESSIONS.map((_,i)=>{const svg=catSVG(p,31,null,.2,1,null,'british_blue',i,0);assert.equal((svg.match(/data-open-eye=/g)||[]).length,i===2?1:i===13?0:2);return svg.replace(/data-expression(?:-art)?="\d+"/g,'');});assert.equal(new Set(faces).size,16);
 
  const profile=COATS.find(c=>c.id==='ginger'),marks=MARKINGS.map((_,i)=>naturalFaceFur(profile,31,i));assert.equal(new Set(marks).size,9);
 
