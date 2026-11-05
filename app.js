@@ -1,18 +1,19 @@
 import {segmentInBrowser} from './browser-segment.js';
-import {PRESETS,pathOf,catSVG,inside,validPolygon,poseLayout,randomOutline} from './cat.js';
+import {EXPRESSIONS,COATS,PRESETS,pathOf,catSVG,inside,validPolygon,poseLayout,randomOutline} from './cat.js';
 const $=s=>document.querySelector(s),canvas=$('#canvas');
 const newSeed=()=>crypto.getRandomValues(new Uint32Array(1))[0];
 let importedPhoto=null,importVersion=0,importController=null;
 let points=structuredClone(PRESETS[0].points),seed=newSeed(),anchor=null,drawing=false,draft=[],drag=null,matchLock=null,frame=0;
 const currentLayout=()=>poseLayout(points,anchor,matchLock);
 let preparedShare=null,exportBusy=false;
-const hint=s=>$('#status').textContent=s;
+let toastTimer;
+function hint(s){const el=$('#status');clearTimeout(toastTimer);el.textContent=s;el.classList.toggle('visible',Boolean(s));toastTimer=setTimeout(()=>el.classList.remove('visible'),3000);}
 function scheduleRender(){if(!frame)frame=requestAnimationFrame(()=>{frame=0;render();});}
 function position(e){const r=canvas.getBoundingClientRect();return[Math.max(8,Math.min(492,(e.clientX-r.left)/r.width*500)),Math.max(8,Math.min(492,(e.clientY-r.top)/r.height*500))];}
 function render(){
  const visible=Boolean(importedPhoto&&$('#show-photo').checked&&!drawing);
  $('#photo-underlay').hidden=!visible;$('#photo-toggle').hidden=!importedPhoto;$('#board').classList.toggle('photo-visible',visible);
- const fit=currentLayout();$('#pose-status').textContent=drawing?'':fit.pose.name+'状';
+ const fit=currentLayout();$('#pose-status').textContent=drawing?'逐点画出轮廓，点击起点完成':catDescription(fit);
  preparedShare=null;
  $('#download').disabled=$('#share').disabled=drawing||exportBusy;
  canvas.classList.toggle('drawing',drawing);$('#draw').classList.toggle('active',drawing);$('#draw').setAttribute('aria-pressed',String(drawing));
@@ -21,15 +22,23 @@ function render(){
  else{points.forEach((p,i)=>{const q=points[(i+1)%points.length];overlay+=`<line data-edge="${i}" class="edge" x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" stroke="transparent" stroke-width="24"/>`;});points.forEach((p,i)=>overlay+=`<circle data-index="${i}" class="handle-hit" cx="${p[0]}" cy="${p[1]}" r="15" fill="transparent"/><circle data-index="${i}" class="handle" cx="${p[0]}" cy="${p[1]}" r="3" fill="white" stroke="#666" stroke-width="1"/>`);}
  canvas.innerHTML=catSVG(points,seed,anchor,.6,.45,matchLock).replace('</svg>',`<g id="editor">${overlay}</g></svg>`);
 }
-function useShape(p,photo=null){importedPhoto=photo;points=structuredClone(p);anchor=null;matchLock=null;drawing=false;draft=[];render();}
+function useShape(p,photo=null){catHistory=[seed];catHistoryIndex=0;importedPhoto=photo;points=structuredClone(p);anchor=null;matchLock=null;drawing=false;draft=[];render();}
 function finish(){if(!validPolygon(draft)){hint('请绘制至少三个点，轮廓不能自交。');return;}useShape(draft);}
 $('#draw').onclick=()=>{cancelImport();if(drawing)finish();else{drawing=true;draft=[];render();hint('逐点点击，点击起点或按 Enter 完成。');}};
 $('#random').onclick=()=>{cancelImport();seed=newSeed();useShape(randomOutline(seed));};
-$('#reroll').onclick=()=>{seed=newSeed();render();};
+let swipe=null,catHistory=[seed],catHistoryIndex=0;
+function switchCat(direction){
+ if(exportBusy)return;
+ if(direction<0){if(catHistoryIndex===0){catHistory.unshift(newSeed());}else catHistoryIndex--;}
+ else{catHistoryIndex++;if(catHistoryIndex===catHistory.length)catHistory.push(newSeed());}
+ seed=catHistory[catHistoryIndex];render();hint('已换一只猫');
+}
+function catDescription(fit){const svg=catSVG(points,seed,anchor,.6,.45,matchLock);const expression=+svg.match(/data-expression="([^"]+)"/)?.[1];const coat=svg.match(/data-coat="([^"]+)"/)?.[1];return '一只'+(EXPRESSIONS[expression]||'')+'、'+fit.pose.name+'的'+(COATS.find(c=>c.id===coat)?.name||'').replace(/猫$/,'')+'猫';}
+
 canvas.addEventListener('pointerdown',e=>{
   if(e.button!==0||drag)return;const p=position(e);
   if(drawing){if(draft.length>=3&&Math.hypot(p[0]-draft[0][0],p[1]-draft[0][1])<15)finish();else{draft.push(p);render();}return;}
-  const target=e.target.closest('[data-index],[data-edge],[data-face]');if(!target)return;
+  const target=e.target.closest('[data-index],[data-edge],[data-face]');if(!target){if(!inside(p,points)&&!exportBusy){swipe={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);}return;}
   e.preventDefault();const fitted=currentLayout(),f=fitted.face;matchLock=fitted.pose.id;
   drag={id:e.pointerId,start:p,base:structuredClone(points),face:[f.x,f.y],type:target.hasAttribute('data-index')?'vertex':target.hasAttribute('data-edge')?'edge':'face',index:Number(target.dataset.index??target.dataset.edge)};
   canvas.setPointerCapture(e.pointerId);
@@ -51,12 +60,12 @@ function move(e){
   if(validPolygon(next)){
     // During a gesture fit the same template; rematch the full library on release.
     points=next;anchor=null;scheduleRender();
-    hint('实时调整中：毛色与表情保持，形态随边缘变化。');
+
   }
 }
 canvas.addEventListener('pointermove',move);
-canvas.addEventListener('pointerup',e=>{if(drag?.id===e.pointerId){move(e);endDrag(e);}});
-for(const name of['pointercancel','lostpointercapture'])canvas.addEventListener(name,endDrag);
+canvas.addEventListener('pointerup',e=>{if(swipe?.id===e.pointerId){const dx=e.clientX-swipe.x,dy=e.clientY-swipe.y;swipe=null;if(Math.abs(dx)>=40&&Math.abs(dx)>Math.abs(dy)*1.5)switchCat(dx<0?1:-1);return;}if(drag?.id===e.pointerId){move(e);endDrag(e);}});
+for(const name of['pointercancel','lostpointercapture'])canvas.addEventListener(name,e=>{if(swipe?.id===e.pointerId)swipe=null;endDrag(e);});
 canvas.addEventListener('dblclick',e=>{
   if(drawing)return;const p=position(e);
   // Pointer capture and SVG replacement can retarget dblclick to the canvas.
@@ -68,8 +77,8 @@ canvas.addEventListener('dblclick',e=>{
 });
 document.addEventListener('keydown',e=>{if(!drawing||e.target.matches('input'))return;if(e.key==='Enter'){e.preventDefault();finish();}if(e.key==='Escape'){drawing=false;draft=[];hint('已取消绘制，保留原来的猫。');render();}if(e.key==='Backspace'){e.preventDefault();draft.pop();render();}});
 
-function importMessage(text,error=false){const el=$('#import-status');el.textContent=text;el.hidden=!text;el.classList.toggle('error',error);}
-function setImportBusy(busy){$('#import-photo').textContent=busy?'正在导入…':'导入图片';$('#import-photo').setAttribute('aria-busy',String(busy));}
+function importMessage(text,error=false){const el=$('#import-status');el.textContent=text;el.hidden=!text;el.classList.toggle('error',error);if(error&&text)hint(text);}
+function setImportBusy(busy){$('#import-photo').disabled=busy;$('#import-photo').setAttribute('aria-busy',String(busy));}
 function cancelImport(){importVersion++;if(importController)importController.abort();importController=null;setImportBusy(false);importMessage('');}
 $('#show-photo').onchange=render;
 $('#import-photo').onclick=()=>$('#photo-input').click();

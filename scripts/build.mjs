@@ -8,7 +8,8 @@ const read=name=>readFile(new URL(name,root),'utf8');
 const [html,css,cat,segment,app]=await Promise.all(['index.html','style.css','cat.js','browser-segment.js','app.js'].map(read));
 const script=cat.replace(/^export /gm,'')+'\n'+segment.replace(/^export /gm,'')+'\n'+app.replace(/^import .*?;\n/gm,'');
 const output=html.replace('<link rel="stylesheet" href="style.css">',()=>`<style>${css}</style>`).replace('<script type="module" src="app.js"></script>',()=>`<script type="module">${script}</script>`);
-await mkdir(new URL('dist/assets/',root),{recursive:true});
+await mkdir(new URL('dist/assets/ui/',root),{recursive:true});
+for(const name of ['logo','share','download','pencil','dice','camera'])await copyFile(new URL('assets/ui/'+name+'.svg',root),new URL('dist/assets/ui/'+name+'.svg',root));
 await mkdir(new URL('.cache/browser-model/',root),{recursive:true});
 const model=new URL('.cache/browser-model/u2netp.onnx',root),expected='8e83ca70e441ab06c318d82300c84806';
 async function verified(){try{return createHash('md5').update(await readFile(model)).digest('hex')===expected;}catch{return false;}}
