@@ -331,11 +331,11 @@ export function catSVG(points,seed=1,anchor=null,asymmetry=.75,detail=1,lockedId
   // Reference style: diffuse airbrushed pigment, no rim, reflective bead or cut-out lid.
   // Dimensions in the safe head coordinate frame: tiny dots through face-filling eyes.
   const eyeDesigns=[
-   [19,24,44,-12,'bean'],[30,14,48,-10,'slit'],[48,50,51,-16,'bean'],
-   [46,49,51,-17,'bean'],[53,46,53,-16,'almond'],[49,49,52,-15,'droop'],
-   [45,48,51,-14,'droop'],[24,30,48,-15,'bean'],[53,57,54,-22,'bean'],
-   [49,53,54,-20,'bean'],[54,43,53,-18,'slant'],[55,51,54,-16,'slant'],
-   [38,16,49,-10,'slit'],[32,24,49,-13,'closed'],[49,58,52,-23,'droop'],[7,9,44,-13,'bean']
+   [9,12,43,-12,'bean'],[30,14,48,-10,'slit'],[10,14,46,-13,'bean'],
+   [12,17,47,-18,'bean'],[22,14,49,-14,'almond'],[17,14,46,-12,'almond'],
+   [14,13,46,-10,'almond'],[10,14,49,-17,'bean'],[19,23,50,-22,'bean'],
+   [17,20,49,-16,'bean'],[30,18,50,-12,'slant'],[55,51,54,-16,'slant'],
+   [38,16,49,-10,'slit'],[25,20,47,-13,'closed'],[11,17,44,-23,'bean'],[7,9,44,-13,'bean']
   ];
   const [designRx,designRy,spacing,eyeY,designShape]=eyeDesigns[expression];
   const bean='M-.65,-.8 C-.2,-1.2 .8,-.9 .87,-.12 C1,.55 .52,1.05 -.2,.85 C-.95,.75 -1.03,-.16 -.65,-.8Z';
@@ -355,7 +355,7 @@ export function catSVG(points,seed=1,anchor=null,asymmetry=.75,detail=1,lockedId
     const shape=({slit:sleepy,slant,almond,droop,bean})[designShape]||bean;
     const angle=expression===11?0:expression===10?-sign*8:expression===5?sign*19:expression===14?-sign*13:sign*7;
     // Irregular colored eye fields and directional pupils; both remain airbrushed.
-    const colored=![0,1,7,12,15].includes(expression);
+    const colored=expression===11;
     const eyeColor=[4,11].includes(expression)?'#dbe9ad':profile.id==='british_blue'?'#dce9b4':profile.id==='white'?'#d4e9d9':'#e7e99e';
     const pupilX=expression===4?rx*.42:expression===10?-rx*.3:expression===14?-rx*.3:expression===9?-rx*.18:expression===11?rx*.24:0;
     const pupilY=[8,14].includes(expression)?-ry*.4:expression===5?-ry*.15:expression===11?-ry*.05:0;
@@ -371,6 +371,7 @@ export function catSVG(points,seed=1,anchor=null,asymmetry=.75,detail=1,lockedId
    }
    if(tears)emotion+=`<g opacity=".65">`+oval(ex,ey+ry+12,3.5,10,'#afd0dc')+'</g>';
   }
+  if(expression===5||expression===6)emotion+=line('M-61,-28 Q-48,-38 -34,-35 M34,-35 Q48,-38 61,-28',2.7);
   const smile='M0,34 C-1,48 -15,49 -16,40 M0,34 C1,48 16,49 17,40';
   mouth=line(smile,4);
   if(mouthChoice===1)mouth=line('M0,34 C-2,55 -25,51 -25,36 M0,34 C2,55 25,51 25,36',4);
@@ -379,7 +380,8 @@ export function catSVG(points,seed=1,anchor=null,asymmetry=.75,detail=1,lockedId
   if(mouthChoice===4)mouth=line('M0,34 C-1,51 -22,51 -21,39 M0,34 Q5,55 23,38',3.5);
   if(expression===11)mouth=line('M-12,48 Q0,38 12,48',3.5);
   if(expression===12)mouth=oval(0,46,5,7,dark);
-  if(expression===13)mouth=line('M-17,40 Q0,66 17,40',4);
+  if(expression===13)mouth=line('M-14,40 Q0,58 14,40',3.5);
+  if(expression===14)mouth=line('M0,35 Q-4,46 -12,41 M0,35 Q4,46 12,41',3);
   if(expression===15)mouth=line('M-7,46 L7,46',3);
   if(tongue)mouth=oval(5,51,7,10,'#d9939c')+mouth;
   if(sweat)emotion+=`<path d="M73,-35 Q56,-11 69,-8 Q84,-6 73,-35Z" fill="#afd0dc"/>`;

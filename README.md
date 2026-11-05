@@ -57,3 +57,6 @@ npm start
 ### 完整表情与姿势总览（待确认）
 
 运行 `npm run build:pages` 后打开 `dist/review/catalog-v4.html`，可独立离线打开，查看 16 种表情、66 种静态姿态与 12 种毛色，并组合、随机或导出 SVG。`expressions-v4.svg` 是全部表情对照，`combinations-v4.svg` 是姿态组合，`poses-v4-1.svg` 至 `poses-v4-3.svg` 覆盖全部姿势。总览来自实际渲染器，并非生成式概念图；当前只有定格姿态，没有连续动作动画。此版保留在 review 分支，待用户确认后再合入 main。
+
+
+最新表情修订为 `catalog-v5.html` / `expressions-v5.svg`：保留编号 02、12、13、16 原样，其余去掉大面积浅色眼底，以小色斑、眼缝和嘴形表达情绪。仍待用户确认。

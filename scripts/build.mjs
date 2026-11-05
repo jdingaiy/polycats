@@ -35,4 +35,4 @@ await import('./build-soft-face-review.mjs');
 await copyFile(new URL('review/expression-study-v3.svg',root),new URL('dist/review/expression-study-v3.svg',root));
 
 await import('./build-full-catalog.mjs');
-for(const file of ['catalog-v4.html','expressions-v4.svg','combinations-v4.svg','poses-v4-1.svg','poses-v4-2.svg','poses-v4-3.svg'])await copyFile(new URL('review/'+file,root),new URL('dist/review/'+file,root));
+for(const file of ['catalog-v5.html','expressions-v5.svg','combinations-v5.svg','poses-v5-1.svg','poses-v5-2.svg','poses-v5-3.svg'])await copyFile(new URL('review/'+file,root),new URL('dist/review/'+file,root));
