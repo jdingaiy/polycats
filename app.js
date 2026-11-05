@@ -5,6 +5,7 @@ const newSeed=()=>crypto.getRandomValues(new Uint32Array(1))[0];
 let importedPhoto=null,importVersion=0,importController=null;
 let points=structuredClone(PRESETS[0].points),seed=newSeed(),anchor=null,drawing=false,draft=[],drag=null,matchLock=null,frame=0;
 const currentLayout=()=>poseLayout(points,anchor,matchLock);
+let preparedShare=null,exportBusy=false;
 const hint=s=>$('#status').textContent=s;
 function scheduleRender(){if(!frame)frame=requestAnimationFrame(()=>{frame=0;render();});}
 function position(e){const r=canvas.getBoundingClientRect();return[Math.max(8,Math.min(492,(e.clientX-r.left)/r.width*500)),Math.max(8,Math.min(492,(e.clientY-r.top)/r.height*500))];}
@@ -12,7 +13,8 @@ function render(){
  const visible=Boolean(importedPhoto&&$('#show-photo').checked&&!drawing);
  $('#photo-underlay').hidden=!visible;$('#photo-toggle').hidden=!importedPhoto;$('#board').classList.toggle('photo-visible',visible);
  const fit=currentLayout();$('#pose-status').textContent=drawing?'':fit.pose.name+'状';
- $('#download').disabled=drawing;
+ preparedShare=null;
+ $('#download').disabled=$('#share').disabled=drawing||exportBusy;
  canvas.classList.toggle('drawing',drawing);$('#draw').classList.toggle('active',drawing);$('#draw').setAttribute('aria-pressed',String(drawing));
  let overlay='';
  if(drawing){overlay='<rect width="500" height="500" fill="#f0f0f0"/><polyline points="'+draft.map(p=>p.join(',')).join(' ')+'" fill="#00000008" stroke="#666" stroke-width="1"/>';draft.forEach((p,i)=>overlay+=`<circle cx="${p[0]}" cy="${p[1]}" r="${i?3:6}" fill="#333"/>`);}
@@ -89,10 +91,8 @@ $('#photo-input').onchange=async e=>{
 };
 // Rasterize only artwork layers: the DOM editor and toolbar never enter the export.
 function loadExportImage(source){return new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(new Error('无法生成图片，请重试。'));image.src=source;});}
-$('#download').onclick=async()=>{
- const button=$('#download');button.disabled=true;button.setAttribute('aria-busy','true');
- try{
-  if(frame){cancelAnimationFrame(frame);frame=0;render();button.disabled=true;}
+async function exportCatPNG(){
+ if(frame){cancelAnimationFrame(frame);frame=0;render();}
   const artwork=canvas.querySelector('svg').cloneNode(true);artwork.querySelector('#editor')?.remove();
   artwork.setAttribute('width','1000');artwork.setAttribute('height','1000');
   const surface=document.createElement('canvas');surface.width=surface.height=1000;
@@ -100,12 +100,33 @@ $('#download').onclick=async()=>{
   const context=surface.getContext('2d');context.scale(2,2);
   const source=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(artwork)],{type:'image/svg+xml;charset=utf-8'}));
   try{const image=await loadExportImage(source);context.drawImage(image,0,0,500,500);}finally{URL.revokeObjectURL(source);}
-  const blob=await new Promise((resolve,reject)=>surface.toBlob(value=>value?resolve(value):reject(new Error('无法生成 PNG，请重试。')),'image/png'));
-  const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='polycats.png';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
-  hint('已导出透明背景 PNG。');
- }catch(error){hint(error.message||'导出失败，请重试。');}
- finally{button.disabled=drawing;button.removeAttribute('aria-busy');}
-};
+  return await new Promise((resolve,reject)=>surface.toBlob(value=>value?resolve(value):reject(new Error('无法生成 PNG，请重试。')),'image/png'));
+}
+function downloadCatPNG(blob){
+ const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='polycats.png';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+async function exportAction(share){
+ if(drawing||exportBusy)return;
+ exportBusy=true;
+ const button=$(share?'#share':'#download');button.setAttribute('aria-busy','true');
+ $('#download').disabled=$('#share').disabled=true;
+ try{
+  const file=preparedShare||new File([await exportCatPNG()],'polycats.png',{type:'image/png'});
+  preparedShare=file;
+  if(share&&navigator.share&&navigator.canShare?.({files:[file]})){
+   if(navigator.userActivation&&!navigator.userActivation.isActive){hint('图片已准备好，请再点一次分享。');return;}
+   await navigator.share({files:[file]});hint('已打开系统分享。');
+  }else{
+   downloadCatPNG(file);hint(share?'此浏览器不支持图片分享，已下载透明 PNG，可保存后分享。':'已导出透明背景 PNG。');
+  }
+ }catch(error){
+  if(error.name==='AbortError')hint('已取消分享。');
+  else if(share&&preparedShare){downloadCatPNG(preparedShare);hint('未能打开分享，已下载透明 PNG，可保存后分享。');}
+  else hint(error.message||'导出失败，请重试。');
+ }finally{exportBusy=false;$('#download').disabled=$('#share').disabled=drawing;button.removeAttribute('aria-busy');}
+}
+$('#download').onclick=()=>exportAction(false);
+$('#share').onclick=()=>exportAction(true);
 
 render();
 

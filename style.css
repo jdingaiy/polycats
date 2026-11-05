@@ -5,4 +5,6 @@
 button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:background .12s,color .12s,transform .12s}button.is-pressed:not(:disabled){background:#222;color:#fff;transform:scale(.95)}
 @media(hover:none),(pointer:coarse){#editor{opacity:0;transition:none}#canvas.dragging #editor,#canvas.drawing #editor{opacity:1}.handle-hit,.edge{pointer-events:all}}
 
-#download{position:absolute;top:12px;right:12px;z-index:3;display:flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:8px 14px;border:1px solid #ccc;border-radius:20px;background:#fff;color:#222}#download svg{display:block}#download:disabled{cursor:wait}
+#download,#share{position:absolute;top:12px;right:12px;z-index:3;display:flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:8px 14px;border:1px solid #ccc;border-radius:20px;background:#fff;color:#222}#download svg,#share svg{display:block}#download:disabled,#share:disabled{cursor:wait}
+
+#share{right:114px}#status{min-height:1.5em;text-align:center;font-size:13px;color:#666;margin:8px 0}
