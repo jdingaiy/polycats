@@ -26,3 +26,13 @@ await writeFile(new URL('dist/index.html',root),output);
 console.log('Built dist/: drawing and PNG export, plus browser-only image import (assets/ required).');
 
 await import('./build-pose-review.mjs');
+
+await import('./build-character-review.mjs');
+await mkdir(new URL('dist/review/',root),{recursive:true});
+for(const file of ['index.html','poses.svg','expressions.svg'])await copyFile(new URL('review/'+file,root),new URL('dist/review/'+file,root));
+
+await import('./build-soft-face-review.mjs');
+await copyFile(new URL('review/expression-study-v3.svg',root),new URL('dist/review/expression-study-v3.svg',root));
+
+await import('./build-full-catalog.mjs');
+for(const file of ['catalog-v7.html','expressions-v7.svg','combinations-v7.svg','eye-colors-v7.svg','poses-v7-1.svg','poses-v7-2.svg','poses-v7-3.svg'])await copyFile(new URL('review/'+file,root),new URL('dist/review/'+file,root));
