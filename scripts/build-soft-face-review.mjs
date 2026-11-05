@@ -1,11 +1,11 @@
 import {writeFile} from 'node:fs/promises';
 import {catSVG,TEMPLATES} from '../cat.js';
 const head=TEMPLATES.find(p=>p.id==='head');
-const studies=[['01','小豆眼 · 呆呆的','white',15],['02','不规则眼斑 · 惊讶','ginger',8],['03','扁杏仁眼 · 偷偷看','tabby',4],['04','斜眼 · 不高兴','british_blue',11],['05','弯眼 · 笑眯眯','calico',13],['06','一大一小 · 疑惑','black',9]];
-const w=1320,h=1030,cw=408,ch=395;
+const studies=[['01','大眼愣住','ginger',8],['02','压低眼皮 · 气鼓鼓','black',11],['03','抬眼巴望','calico',14],['04','偷偷瞟一眼','tabby',4],['05','一大一小 · 懵','white',9],['06','挤眼卖萌','ginger',2],['07','嫌弃侧目','british_blue',10],['08','委屈巴巴','calico',5],['09','笑到眯眼','tabby',13],['10','困到睁不开','white',12],['11','小豆眼 · 放空','ginger',15],['12','惊讶张嘴','black',3]];
+const w=1320,h=1890,cw=408,ch=395;
 const cards=studies.map(([no,label,coat,exp],i)=>{const x=36+(i%3)*420,y=152+Math.floor(i/3)*420;
  const art=catSVG(head.points,631+i,null,.65,.4,'head',coat,exp,0).replace('viewBox="0 0 500 500"','viewBox="75 55 335 345"');
  return `<g transform="translate(${x} ${y})"><rect width="${cw}" height="${ch}" rx="12" fill="#e5e7e6"/>${art.replace('<svg ','<svg x="28" y="8" width="352" height="318" ')}<text x="24" y="360" font-size="22" fill="#303737">${label}</text></g>`;}).join('');
-const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="#f4f4f1"/><style>text{font-family:'Noto Sans CJK SC','Noto Sans SC',sans-serif}</style><text x="36" y="62" font-size="34" font-weight="600" fill="#252d2c">五官重做 · 柔焦喷绘眼型</text><text x="36" y="104" font-size="18" fill="#65716e">不规则眼斑与模糊色素 · 无眼框、无亮面高光、无硬切眼皮</text>${cards}<text x="36" y="1010" font-size="15" fill="#65716e">Polycats · 实际 SVG 渲染结果 · 风格确认稿 / 未合入 main</text></svg>`;
-await writeFile(new URL('../review/soft-faces-v2.svg',import.meta.url),svg);
-console.log('Built review/soft-faces-v2.svg');
+const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="#f4f4f1"/><style>text{font-family:'Noto Sans CJK SC','Noto Sans SC',sans-serif}</style><text x="36" y="62" font-size="34" font-weight="600" fill="#252d2c">表情一览 · 夸张神态 / 柔焦渐变</text><text x="36" y="104" font-size="18" fill="#65716e">参考大眼、斜视、挤眼与大小眼的神态；保留多边形外轮廓与喷绘色块</text>${cards}<text x="36" y="1870" font-size="15" fill="#65716e">Polycats · 实际 SVG 渲染结果 · 风格确认稿 / 未合入 main</text></svg>`;
+await writeFile(new URL('../review/expression-study-v3.svg',import.meta.url),svg);
+console.log('Built review/expression-study-v3.svg');

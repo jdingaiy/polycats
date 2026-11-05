@@ -32,4 +32,7 @@ await mkdir(new URL('dist/review/',root),{recursive:true});
 for(const file of ['index.html','poses.svg','expressions.svg'])await copyFile(new URL('review/'+file,root),new URL('dist/review/'+file,root));
 
 await import('./build-soft-face-review.mjs');
-await copyFile(new URL('review/soft-faces-v2.svg',root),new URL('dist/review/soft-faces-v2.svg',root));
+await copyFile(new URL('review/expression-study-v3.svg',root),new URL('dist/review/expression-study-v3.svg',root));
+
+await import('./build-full-catalog.mjs');
+for(const file of ['catalog-v4.html','expressions-v4.svg','combinations-v4.svg','poses-v4-1.svg','poses-v4-2.svg','poses-v4-3.svg'])await copyFile(new URL('review/'+file,root),new URL('dist/review/'+file,root));
