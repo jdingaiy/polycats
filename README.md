@@ -50,3 +50,5 @@ npm start
 ## 姿势与表情预览（待确认）
 
 `node scripts/build-character-review.mjs` 输出 `review/index.html`、姿势一览 SVG 和表情一览 SVG；构建时同步到 `dist/review/`。新增 8 个独立姿态，总姿态数 66；表情由 8 种扩至 16 种。眼睛的整体尺度、左右差异真正参与绘制，上眼皮、瞳孔与视线共同表达情绪，保留原有柔焦毛色和多边形边界。参考仅用于体态和五官比例，不复制铅笔材质。当前变更在评审分支，确认前不合入 main。
+
+五官风格修正：最新确认稿为 `review/soft-faces-v2.svg`（`node scripts/build-soft-face-review.mjs`）。眼睛改用柔焦的不规则色素斑、杏仁眼、斜眼与细缝眼；去掉眼框、玻璃高光与硬切眼皮。黑猫用暖黄色眼斑。保持原有身体花纹和渐变。上一轮亮面眼球方案已作废，本分支仍待确认。

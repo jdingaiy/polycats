@@ -30,3 +30,6 @@ await import('./build-pose-review.mjs');
 await import('./build-character-review.mjs');
 await mkdir(new URL('dist/review/',root),{recursive:true});
 for(const file of ['index.html','poses.svg','expressions.svg'])await copyFile(new URL('review/'+file,root),new URL('dist/review/'+file,root));
+
+await import('./build-soft-face-review.mjs');
+await copyFile(new URL('review/soft-faces-v2.svg',root),new URL('dist/review/soft-faces-v2.svg',root));

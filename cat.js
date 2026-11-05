@@ -201,7 +201,7 @@ export const COATS=[
  {id:'white',name:'奶油白猫',pattern:'solid',base:'#eee4cf',shade:'#c6b8a2',light:'#fff7e7',ink:'#6c5f52',iris:'#9fb7b0',patches:[],face:'solid'},
  {id:'black',name:'乌云黑猫',pattern:'solid',base:'#2a2f36',shade:'#141b23',light:'#575f69',ink:'#9aa0a5',iris:'#cfb24a',patches:[],face:'solid'},
 ];
-export const EXPRESSIONS=['乖巧','轻闭眼','眨眼','小惊讶','好奇','委屈','流泪','流汗','瞪大眼','大小眼困惑','嫌弃侧目','炸毛生气','困到睁不开','开心眯眼','星星眼期待','呆滞豆眼'];
+export const EXPRESSIONS=['乖巧','轻闭眼','眨眼','小惊讶','好奇','委屈','流泪','流汗','瞪大眼','大小眼困惑','嫌弃侧目','炸毛生气','困到睁不开','开心眯眼','抬眼期待','呆滞豆眼'];
 export const MARKINGS=['自然毛色','宽额分纹','细额分纹','不对称额纹','低额纹','高额纹','细碎额纹','分叉额纹','疏额纹'];
 export function coatFor(seed,mode='auto'){
  return COATS.find(c=>c.id===mode)||COATS[Math.floor(random(seed^0x716fc3)()*COATS.length)];
@@ -328,33 +328,32 @@ export function catSVG(points,seed=1,anchor=null,asymmetry=.75,detail=1,lockedId
   const line=(d,width=4,color=dark)=>`<path d="${d}" stroke="${color}" stroke-width="${width}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
   const oval=(cx,cy,rx,ry,color)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${color}"/>`;
   let eyes='',mouth='',emotion='';
-  // Eyes stay inside the safe facial disk; lids and gaze carry emotion as well as size.
-  const emotionSize={3:1.6,8:2.25,9:1.7,10:1.4,11:1.5,12:1.25,13:1.5,14:2.15,15:.48};
+  // Reference style: diffuse airbrushed pigment, no rim, reflective bead or cut-out lid.
+  const emotionSize={0:.8,1:1.1,3:1.4,4:1.2,5:1.15,6:1,7:.8,8:1.8,9:1.55,10:1.6,11:1.5,12:1.3,13:1,14:1.65,15:.42};
+  const bean='M-.65,-.8 C-.2,-1.2 .8,-.9 .87,-.12 C1,.55 .52,1.05 -.2,.85 C-.95,.75 -1.03,-.16 -.65,-.8Z';
+  const almond='M-1,.12 C-.52,-.64 .29,-.76 1,-.22 C.68,.49 -.2,.78 -1,.12Z';
+  const slant='M-1,-.38 C-.46,-.63 .34,-.12 1,.34 C.38,.81 -.57,.51 -1,-.38Z';
+  const sleepy='M-1,-.06 C-.45,-.33 .46,-.24 1,-.02 C.37,.3 -.53,.32 -1,-.06Z';
   for(const sign of[-1,1]){
-   const ex=sign*36,ey=-12+sign*eyeLift/r*45;
+   const ex=sign*36,ey=-12+sign*eyeLift/r*42;
    const size=(emotionSize[expression]||eyeSize)*eyeScale[sign===-1?0:1]*(expression===9?(sign===-1?1.25:.55):1);
-   const rx=Math.min(35,20*size),ry=Math.min(39,(expression===1?6:22)*size);
+   const rx=Math.min(32,14*size),ry=Math.min(30,17*size);
    const closed=(expression===2&&sign===1)||expression===13;
-   const eyeID=`${id}-eye-${sign===-1?'l':'r'}`;
-   if(closed){eyes+=`<g data-eye-size="${size.toFixed(3)}">`+line(`M${ex-18},${ey+5} Q${ex},${ey-15} ${ex+18},${ey+5}`,3.5)+'</g>';}
-   else{
-    const pupilW=[3,8,14].includes(expression)?rx*.52:rx*(expression===10?.19:.25);
-    const gaze=expression===4?rx*.3:expression===10?-rx*.38:0;
-    eyes+=`<g data-open-eye="${sign}" data-eye-size="${size.toFixed(3)}"><defs><radialGradient id="${eyeID}-iris" cx="38%" cy="30%"><stop stop-color="#f2f4bc"/><stop offset=".5" stop-color="${iris}"/><stop offset="1" stop-color="${profile.shade}"/></radialGradient><clipPath id="${eyeID}"><ellipse cx="${ex}" cy="${ey}" rx="${rx}" ry="${ry}"/></clipPath></defs>`;
-    eyes+=oval(ex,ey,rx+1,ry+1,dark)+oval(ex,ey,rx,ry,`url(#${eyeID}-iris)`);
-    eyes+=`<g clip-path="url(#${eyeID})">`+oval(ex+gaze,ey+1,pupilW,ry*.9,'#242722')+oval(ex-rx*.22,ey-ry*.35,Math.max(1.4,rx*.15),Math.max(1.4,rx*.15),'#fff8e9');
-    if(expression===14){eyes+=`<path d="M${ex},${ey-12} l3,8 8,3 -8,3 -3,8 -3,-8 -8,-3 8,-3Z" fill="#fff9df"/>`;}
-    if([10,11,12].includes(expression)){
-     const slope=expression===11?-sign*13:expression===10?sign*4:0,lidY=expression===12?ey+ry*.48:ey-ry*.12;
-     eyes+=`<path d="M${ex-rx-3},${ey-ry-4} H${ex+rx+3} V${lidY+slope} L${ex-rx-3},${lidY-slope}Z" fill="${coat}"/>`;
-     eyes+=line(`M${ex-rx},${lidY-slope} L${ex+rx},${lidY+slope}`,2.5);
-    }
-    eyes+='</g></g>';
+   const eid=`${id}-pigment-${sign===-1?'l':'r'}`;
+   if(closed){
+    eyes+=`<g data-eye-size="${size.toFixed(3)}" filter="url(#${id}-eye-ink)">`+line(`M${ex-14},${ey+3} Q${ex},${ey-10} ${ex+14},${ey+3}`,4)+'</g>';
+   }else{
+    const shape=[1,12].includes(expression)?sleepy:[10,11].includes(expression)?slant:[4,5,6,14].includes(expression)?almond:bean;
+    const angle=expression===11?-sign*15:expression===5?sign*15:sign*7;
+    const gaze=expression===4?4:expression===10?-5:0;
+    // A softly fading patch, not an iris disc: preserve the hand-sprayed reference.
+    eyes+=`<g data-open-eye="${sign}" data-eye-size="${size.toFixed(3)}" data-eye-shape="${shape===bean?'bean':shape===almond?'almond':shape===slant?'slant':'slit'}" transform="translate(${ex} ${ey}) rotate(${angle})"><defs><radialGradient id="${eid}"><stop stop-color="${iris}" stop-opacity=".6"/><stop offset=".52" stop-color="${iris}" stop-opacity=".32"/><stop offset="1" stop-color="${iris}" stop-opacity="0"/></radialGradient></defs>`;
+    if([4,8,14].includes(expression)||profile.id==='black')eyes+=oval(0,0,rx*1.45,ry*1.35,`url(#${eid})`);
+    eyes+=`<g filter="url(#${id}-eye-ink)"><path d="${shape}" transform="translate(${gaze} 0) scale(${rx} ${ry})" fill="${profile.id==='black'?iris:dark}" opacity=".85"/></g></g>`;
    }
-   if(expression===5||tears)eyes+=line(`M${ex-sign*9},-38 L${ex+sign*9},-29`,2.5);
-   if(tears)emotion+=oval(ex,ey+ry+12,3.5,11,'#afd0dc');
+   if(tears)emotion+=`<g opacity=".65">`+oval(ex,ey+ry+12,3.5,10,'#afd0dc')+'</g>';
   }
-  const smile='M0,34 C-1,51 -22,51 -21,39 M0,34 C1,51 22,51 21,39';
+  const smile='M0,34 C-1,48 -15,49 -16,40 M0,34 C1,48 16,49 17,40';
   mouth=line(smile,4);
   if(mouthChoice===1)mouth=line('M0,34 C-2,55 -25,51 -25,36 M0,34 C2,55 25,51 25,36',4);
   if(mouthChoice===2)mouth=oval(0,46,6,8,dark);
@@ -366,7 +365,7 @@ export function catSVG(points,seed=1,anchor=null,asymmetry=.75,detail=1,lockedId
   if(expression===15)mouth=line('M-7,46 L7,46',3);
   if(tongue)mouth=oval(5,51,7,10,'#d9939c')+mouth;
   if(sweat)emotion+=`<path d="M73,-35 Q56,-11 69,-8 Q84,-6 73,-35Z" fill="#afd0dc"/>`;
-  const expressionArt=`<g data-expression-art="${expression}" transform="translate(${x} ${y}) scale(${r/100})">${emotion}${eyes}${mouth}</g>`;
+  const expressionArt=`<g data-facial-style="soft-pigment" data-expression-art="${expression}" transform="translate(${x} ${y}) scale(${r/100})">${emotion}${eyes}${mouth}</g>`;
   let whiskers='',features='',body='';
   const extras=random(seed^0x123456),stroke=(d,width=1.5,opacity=.55)=>`<path d="${d}" fill="none" stroke="${dark}" stroke-width="${width}" opacity="${opacity}" stroke-linecap="round"/>`;
   if(detail>0){
@@ -387,6 +386,7 @@ export function catSVG(points,seed=1,anchor=null,asymmetry=.75,detail=1,lockedId
   <mask id="${id}-body-mask" maskUnits="userSpaceOnUse" x="-600" y="-600" width="1700" height="1700"><rect x="-600" y="-600" width="1700" height="1700" fill="white"/><ellipse cx="${x}" cy="${y}" rx="${r*2.1}" ry="${r*2.3}" fill="url(#${id}-head-fade)"/></mask>
   <linearGradient id="${id}-edge" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="${cream}" stop-opacity=".32"/><stop offset=".45" stop-color="${profile.shade}" stop-opacity=".12"/><stop offset="1" stop-color="${profile.shade}" stop-opacity=".34"/></linearGradient>
   <filter id="${id}-edge-soft" filterUnits="userSpaceOnUse" x="-600" y="-600" width="1700" height="1700"><feGaussianBlur in="SourceAlpha" stdDeviation="${Math.max(4,match.scale*7)}" result="soft-alpha"/><feOffset in="soft-alpha" dx="-1.5" dy="-2" result="lit-alpha"/><feComposite in="SourceAlpha" in2="lit-alpha" operator="out" result="inside-rim"/><feFlood flood-color="${profile.shade}" flood-opacity=".28" result="rim-color"/><feComposite in="rim-color" in2="inside-rim" operator="in"/></filter>
+  <filter id="${id}-eye-ink" filterUnits="userSpaceOnUse" x="-150" y="-150" width="300" height="300"><feGaussianBlur stdDeviation="2.6"/></filter>
   <filter id="${id}-tiny" filterUnits="userSpaceOnUse" x="-600" y="-600" width="1700" height="1700"><feGaussianBlur stdDeviation="${Math.max(1.15,r*.035)}"/></filter>
   <radialGradient id="${id}-body" cx="42%" cy="32%" r="70%"><stop stop-color="${cream}"/><stop offset=".48" stop-color="${coat}"/><stop offset="1" stop-color="${profile.shade}"/></radialGradient>
   <radialGradient id="${id}-face"><stop stop-color="${cream}" stop-opacity=".12"/><stop offset=".55" stop-color="${cream}" stop-opacity=".04"/><stop offset="1" stop-color="${coat}" stop-opacity="0"/></radialGradient>
