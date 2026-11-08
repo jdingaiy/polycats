@@ -1,0 +1,5 @@
+import {writeFileSync,readFileSync} from 'node:fs';import {frogSVG,FROG_POSES,FROG_EXPRESSIONS} from '../frog.js';
+const out=new URL('../',import.meta.url).pathname;
+const poses=FROG_POSES.map((p,i)=>`<section>${frogSVG(p.points,100+i,null,p.id,0)}<p>${p.name} · ${p.points.length} 个顶点</p></section>`).join('');
+const cards=FROG_EXPRESSIONS.map((n,i)=>`<section>${frogSVG(FROG_POSES[i].points,100+i,null,FROG_POSES[i].id,i)}<p>${n} · ${['90:6550','90:6565','90:6517','90:6516','90:6515','90:6514','90:6557'][i]}</p></section>`).join('');
+writeFileSync(out+'dist/frog-confirmed.html',`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>奶蛙 Figma 实际渲染对照</title><style>body{margin:24px;background:#222;color:#ddd;font:14px sans-serif}main{display:grid;grid-template-columns:repeat(7,1fr);gap:12px}svg{display:block;width:100%}p{text-align:center;font-size:12px}img{width:100%}h2{font-size:16px;font-weight:500}@media(max-width:700px){main{grid-template-columns:repeat(2,1fr)}}</style><h2>程序实际渲染</h2><main>${cards}</main><h2>24 种抽象姿势</h2><main>${poses}</main>`);

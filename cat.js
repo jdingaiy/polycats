@@ -24,9 +24,9 @@ export function randomOutline(seed){
  const rng=random(seed);
  for(let attempt=0;attempt<120;attempt++){
   let p;
-  if(rng()<.7){const base=TEMPLATES[Math.floor(rng()*TEMPLATES.length)].points,angle=(rng()-.5)*1.2,c=Math.cos(angle),sn=Math.sin(angle),sx=.7+rng()*.3,sy=.7+rng()*.3;p=base.map(([x,y])=>{x=(x-250+(rng()-.5)*65)*sx;y=(y-250+(rng()-.5)*65)*sy;return[250+x*c-y*sn,250+x*sn+y*c];});}
-  else{const n=5+Math.floor(rng()*12),phase=rng()*Math.PI*2;p=Array.from({length:n},(_,i)=>{const a=phase+i*Math.PI*2/n,r=55+rng()*150;return[250+Math.cos(a)*r,250+Math.sin(a)*r];});}
-  p=p.map(v=>v.map(n=>Math.round(Math.max(10,Math.min(490,n))*100)/100));if(validPolygon(p))return p;
+  if(rng()<.25){const base=TEMPLATES[Math.floor(rng()*TEMPLATES.length)].points,angle=(rng()-.5)*1.2,c=Math.cos(angle),sn=Math.sin(angle),sx=.7+rng()*.3,sy=.7+rng()*.3;p=base.map(([x,y])=>{x=(x-250+(rng()-.5)*65)*sx;y=(y-250+(rng()-.5)*65)*sy;return[250+x*c-y*sn,250+x*sn+y*c];});}
+  else{const n=5+Math.floor(rng()*11),phase=rng()*Math.PI*2;p=Array.from({length:n},(_,i)=>{const a=phase+i*Math.PI*2/n,r=55+rng()*150;return[250+Math.cos(a)*r,250+Math.sin(a)*r];});}
+  p=p.map(v=>v.map(n=>Math.round(Math.max(10,Math.min(490,n))*100)/100));if(validPolygon(p)){while(p.length>15){let best=0,area=Infinity;for(let i=0;i<p.length;i++){const a=p[(i+p.length-1)%p.length],b=p[i],c=p[(i+1)%p.length],v=Math.abs((b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]));if(v<area){area=v;best=i;}}p.splice(best,1);}if(validPolygon(p))return p;}
  }
  return [[70,300],[145,90],[230,260],[370,80],[430,370],[240,420]];
 }
@@ -127,13 +127,13 @@ function uprightHeadCue(points,box){
  }return null;
 }
 const matchCache=new Map();
-export function matchTemplates(points,lockedId=null){
- const key=JSON.stringify([points,lockedId]);if(matchCache.has(key))return matchCache.get(key);
+export function matchTemplates(points,lockedId=null,templates=TEMPLATES){
+ const key=JSON.stringify([points,lockedId,templates===TEMPLATES?"cats":templates.map(t=>t.id)]);if(matchCache.has(key))return matchCache.get(key);
  const box=bounds(points),target=sampleBoundary(points),n=target.length,headCue=uprightHeadCue(points,box);
  const mean=p=>p.reduce((a,v)=>[a[0]+v[0]/n,a[1]+v[1]/n],[0,0]);
  const tc=mean(target),norm=Math.hypot(box.w,box.h)||1;
  const candidates=[];
- for(const variants of templateSamples){if(lockedId&&variants[0].template.id!==lockedId)continue;let best=null;
+ for(const variants of (templates===TEMPLATES?templateSamples:templates.map(template=>[false,true].map(mirror=>({template,mirror,samples:sampleBoundary(template.points.map(([x,y])=>[mirror?-x:x,y]))}))))){if(lockedId&&variants[0].template.id!==lockedId)continue;let best=null;
   for(const {template,mirror,samples:source} of variants){const exact=exactVertexFit(template,points,mirror,source);if(exact){best=exact;break;}const sc=mean(source);let denom=0;for(const q of source)denom+=(q[0]-sc[0])**2+(q[1]-sc[1])**2;
    for(let offset=0;offset<n;offset++){
     let dot=0,cross=0;
@@ -167,9 +167,9 @@ function transfer(match,point){
  return[base[0]+dx/total*factor,base[1]+dy/total*factor];
 }
 const layoutCache=new Map();
-export function poseLayout(points,anchor=null,lockedId=null){
- const cacheKey=JSON.stringify([points,anchor,lockedId]);if(layoutCache.has(cacheKey))return layoutCache.get(cacheKey);
- const analysis=matchTemplates(points,lockedId),match=analysis.candidates.find(c=>c.id===lockedId)||analysis.candidates[0],template=match.template;
+export function poseLayout(points,anchor=null,lockedId=null,templates=TEMPLATES){
+ const cacheKey=JSON.stringify([points,anchor,lockedId,templates===TEMPLATES?"cats":templates.map(t=>t.id)]);if(layoutCache.has(cacheKey))return layoutCache.get(cacheKey);
+ const analysis=matchTemplates(points,lockedId,templates),match=analysis.candidates.find(c=>c.id===lockedId)||analysis.candidates[0],template=match.template;
  const expected=transfer(match,template.face),desired=template.radius*match.scale;
  // Face nudges are confined to the matched head, not allowed to drift down a leg.
  let target=expected;if(anchor){const dx=anchor[0]-expected[0],dy=anchor[1]-expected[1],factor=Math.min(1,desired*.55/(Math.hypot(dx,dy)||1));target=[expected[0]+dx*factor,expected[1]+dy*factor];}

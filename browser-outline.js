@@ -34,8 +34,8 @@ export function outlineFromMask(mask,width,height){
  const arcA=boundary.slice(0,split+1),arcB=[...boundary.slice(split),boundary[0]];let reduced;
  for(let tolerance=.5;tolerance<Math.max(width,height);tolerance*=1.15){const candidate=[...simplify(arcA,tolerance).slice(0,-1),...simplify(arcB,tolerance).slice(0,-1)];if(candidate.length<=15&&validPolygon(candidate.map(p=>p.map(v=>v*10)))){reduced=candidate;break;}}
  if(!reduced)throw new Error('无法提取有效轮廓，请换一张图片。');boundary=reduced;
- const xs=boundary.map(p=>p[0]),ys=boundary.map(p=>p[1]),cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;
- const scale=440/Math.max(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys));
+ const cx=width/2,cy=height/2;
+ const scale=500/Math.max(width,height);
  const points=boundary.map(([x,y])=>[(x-cx)*scale+250,(y-cy)*scale+250]);
  if(!validPolygon(points))throw new Error('无法提取有效轮廓，请换一张图片。');
  return {points,vertices:points.length,placement:{x:250-cx*scale,y:250-cy*scale,width:width*scale,height:height*scale}};

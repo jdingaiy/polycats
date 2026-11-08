@@ -1,10 +1,13 @@
+import {FROG_POSES,FROG_EXPRESSIONS,frogLayout,frogSVG,frogExpression} from './frog.js';
 import {segmentInBrowser} from './browser-segment.js';
 import {EXPRESSIONS,COATS,PRESETS,pathOf,catSVG,inside,validPolygon,poseLayout,randomOutline} from './cat.js';
 const $=s=>document.querySelector(s),canvas=$('#canvas');
 const newSeed=()=>crypto.getRandomValues(new Uint32Array(1))[0];
+let species="cat";
 let importedPhoto=null,importVersion=0,importController=null;
 let points=structuredClone(PRESETS[0].points),seed=newSeed(),anchor=null,drawing=false,draft=[],drag=null,matchLock=null,frame=0;
-const currentLayout=()=>poseLayout(points,anchor,matchLock);
+const currentLayout=()=>species==="cat"?poseLayout(points,anchor,matchLock):frogLayout(points,anchor,matchLock);
+const artwork=()=>species==="cat"?catSVG(points,seed,anchor,.6,.45,matchLock):frogSVG(points,seed,anchor,matchLock);
 let preparedShare=null,exportBusy=false;
 let toastTimer;
 function hint(s){const el=$('#status');clearTimeout(toastTimer);el.textContent=s;el.classList.toggle('visible',Boolean(s));toastTimer=setTimeout(()=>el.classList.remove('visible'),3000);}
@@ -13,32 +16,49 @@ function position(e){const r=canvas.getBoundingClientRect();return[Math.max(8,Ma
 function render(){
  const visible=Boolean(importedPhoto&&$('#show-photo').checked&&!drawing);
  $('#photo-underlay').hidden=!visible;$('#photo-toggle').hidden=!importedPhoto;$('#board').classList.toggle('photo-visible',visible);
- const fit=currentLayout();$('#pose-status').textContent=drawing?'逐点画出轮廓，点击起点完成':catDescription(fit);
+ const fit=currentLayout();$('#pose-status').textContent=drawing?'逐点画出轮廓，点击起点完成':species==='cat'?catDescription(fit):'一只'+FROG_EXPRESSIONS[frogExpression(seed)]+'、'+fit.pose.name+'的奶蛙';
  preparedShare=null;
  $('#download').disabled=$('#share').disabled=drawing||exportBusy;
  canvas.classList.toggle('drawing',drawing);$('#draw').classList.toggle('active',drawing);$('#draw').setAttribute('aria-pressed',String(drawing));
  let overlay='';
  if(drawing){overlay='<rect width="500" height="500" fill="#f0f0f0"/><polyline points="'+draft.map(p=>p.join(',')).join(' ')+'" fill="#00000008" stroke="#666" stroke-width="1"/>';draft.forEach((p,i)=>overlay+=`<circle cx="${p[0]}" cy="${p[1]}" r="${i?3:6}" fill="#333"/>`);}
  else{points.forEach((p,i)=>{const q=points[(i+1)%points.length];overlay+=`<line data-edge="${i}" class="edge" x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" stroke="transparent" stroke-width="24"/>`;});points.forEach((p,i)=>overlay+=`<circle data-index="${i}" class="handle-hit" cx="${p[0]}" cy="${p[1]}" r="15" fill="transparent"/><circle data-index="${i}" class="handle" cx="${p[0]}" cy="${p[1]}" r="3" fill="white" stroke="#666" stroke-width="1"/>`);}
- canvas.innerHTML=catSVG(points,seed,anchor,.6,.45,matchLock).replace('</svg>',`<g id="editor">${overlay}</g></svg>`);
+ canvas.innerHTML=artwork().replace('</svg>',`<g id="editor">${overlay}</g></svg>`);
 }
 function useShape(p,photo=null){catHistory=[seed];catHistoryIndex=0;importedPhoto=photo;points=structuredClone(p);anchor=null;matchLock=null;drawing=false;draft=[];render();}
 function finish(){if(!validPolygon(draft)){hint('请绘制至少三个点，轮廓不能自交。');return;}useShape(draft);}
 $('#draw').onclick=()=>{cancelImport();if(drawing)finish();else{drawing=true;draft=[];render();hint('逐点点击，点击起点或按 Enter 完成。');}};
-$('#random').onclick=()=>{cancelImport();seed=newSeed();useShape(randomOutline(seed));};
+function turnCard(direction, change){
+ const board=$('#board'), deck=board.parentElement;
+ deck.querySelector('.card-ghost')?.remove();
+ board.getAnimations().forEach(animation=>animation.cancel());
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches){change();return;}
+ const ghost=document.createElement('div');ghost.className='card-ghost';ghost.setAttribute('aria-hidden','true');
+ const oldPhoto=$('#photo-underlay');
+ if(!oldPhoto.hidden){const photo=oldPhoto.cloneNode();photo.removeAttribute('id');ghost.append(photo);}
+ const art=canvas.querySelector('svg').cloneNode(true);art.querySelector('#editor')?.remove();
+ const snapshot=new Image();snapshot.src='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(new XMLSerializer().serializeToString(art));ghost.append(snapshot);
+ deck.append(ghost);change();
+ const timing={duration:300,easing:'cubic-bezier(.22,.76,.24,1)'};
+ ghost.animate([{transform:'none',opacity:1},{transform:`translateX(${-direction*70}%) rotate(${-direction*6}deg)`,opacity:0}],timing).onfinish=()=>ghost.remove();
+ board.animate([{transform:`translateX(${direction*34}%) rotate(${direction*3}deg) scale(.96)`,opacity:.45},{transform:'none',opacity:1}],timing);
+}
+$('#random').onclick=()=>{cancelImport();seed=newSeed();useShape(species==='frog'&&seed%5<3?FROG_POSES[Math.floor(seed/5)%FROG_POSES.length].points:randomOutline(seed));};
+for(const [id,kind] of [['#choose-cat','cat'],['#choose-frog','frog']])$(id).onclick=()=>{if(species===kind||exportBusy)return;turnCard(kind==='frog'?1:-1,()=>{cancelImport();swipe=null;species=kind;canvas.setAttribute('aria-label',kind==='cat'?'拖动轮廓调整小猫，空白处左右滑动切换':'拖动轮廓调整奶蛙');$('#board').setAttribute('aria-label',kind==='cat'?'多边形画板，空白处左右滑动换一只猫':'奶蛙多边形画板');$('#share').setAttribute('aria-label',kind==='cat'?'分享猫猫图片':'分享奶蛙图片');$('#share').title=$('#share').getAttribute('aria-label');$('#choose-cat').setAttribute('aria-pressed',String(kind==='cat'));$('#choose-frog').setAttribute('aria-pressed',String(kind==='frog'));seed=newSeed();useShape(kind==='cat'?PRESETS[0].points:FROG_POSES[seed%FROG_POSES.length].points);});};
 let swipe=null,catHistory=[seed],catHistoryIndex=0;
 function switchCat(direction){
+ if(species!=='cat')return;
  if(exportBusy)return;
  if(direction<0){if(catHistoryIndex===0){catHistory.unshift(newSeed());}else catHistoryIndex--;}
  else{catHistoryIndex++;if(catHistoryIndex===catHistory.length)catHistory.push(newSeed());}
- seed=catHistory[catHistoryIndex];render();hint('已换一只猫');
+ turnCard(direction,()=>{seed=catHistory[catHistoryIndex];render();});hint('已换一只猫');
 }
 function catDescription(fit){const svg=catSVG(points,seed,anchor,.6,.45,matchLock);const expression=+svg.match(/data-expression="([^"]+)"/)?.[1];const coat=svg.match(/data-coat="([^"]+)"/)?.[1];return '一只'+(EXPRESSIONS[expression]||'')+'、'+fit.pose.name+'的'+(COATS.find(c=>c.id===coat)?.name||'').replace(/猫$/,'')+'猫';}
 
 canvas.addEventListener('pointerdown',e=>{
   if(e.button!==0||drag)return;const p=position(e);
   if(drawing){if(draft.length>=3&&Math.hypot(p[0]-draft[0][0],p[1]-draft[0][1])<15)finish();else{draft.push(p);render();}return;}
-  const target=e.target.closest('[data-index],[data-edge],[data-face]');if(!target){if(!inside(p,points)&&!exportBusy){swipe={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);}return;}
+  const target=e.target.closest('[data-index],[data-edge],[data-face]');if(!target){if(species==='cat'&&!inside(p,points)&&!exportBusy){swipe={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);}return;}
   e.preventDefault();const fitted=currentLayout(),f=fitted.face;matchLock=fitted.pose.id;
   drag={id:e.pointerId,start:p,base:structuredClone(points),face:[f.x,f.y],type:target.hasAttribute('data-index')?'vertex':target.hasAttribute('data-edge')?'edge':'face',index:Number(target.dataset.index??target.dataset.edge)};
   canvas.setPointerCapture(e.pointerId);
@@ -77,7 +97,7 @@ canvas.addEventListener('dblclick',e=>{
 });
 document.addEventListener('keydown',e=>{if(!drawing||e.target.matches('input'))return;if(e.key==='Enter'){e.preventDefault();finish();}if(e.key==='Escape'){drawing=false;draft=[];hint('已取消绘制，保留原来的猫。');render();}if(e.key==='Backspace'){e.preventDefault();draft.pop();render();}});
 
-function importMessage(text,error=false){const el=$('#import-status');el.textContent=text;el.hidden=!text;el.classList.toggle('error',error);if(error&&text)hint(text);}
+function importMessage(text){if(text)hint(text);}
 function setImportBusy(busy){$('#import-photo').disabled=busy;$('#import-photo').setAttribute('aria-busy',String(busy));}
 function cancelImport(){importVersion++;if(importController)importController.abort();importController=null;setImportBusy(false);importMessage('');}
 $('#show-photo').onchange=render;
@@ -94,7 +114,7 @@ $('#photo-input').onchange=async e=>{
   const p=result.placement;
   if(!p||!['x','y','width','height'].every(k=>Number.isFinite(p[k]))||p.width<=0||p.height<=0||!/^data:image\/png;base64,/.test(result.image))throw new Error('图片处理结果不完整，请重试。');
   const underlay=$('#photo-underlay');underlay.src=result.image;underlay.style.left=p.x/5+'%';underlay.style.top=p.y/5+'%';underlay.style.width=p.width/5+'%';underlay.style.height=p.height/5+'%';
-  $('#show-photo').checked=true;seed=newSeed();useShape(result.points,{placement:p});importMessage('');
+  $('#show-photo').checked=true;seed=newSeed();useShape(result.points,{placement:p});hint('已导入图片轮廓');
  }catch(error){if(error.name!=='AbortError'&&version===importVersion)importMessage(error.message||'浏览器抠图失败，请重试。',true);}
  finally{if(version===importVersion){setImportBusy(false);importController=null;}}
 };

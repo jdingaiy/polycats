@@ -5,11 +5,20 @@ import {build} from 'esbuild';
 import {fileURLToPath} from 'node:url';
 const root=new URL('../',import.meta.url);
 const read=name=>readFile(new URL(name,root),'utf8');
-const [html,css,cat,segment,app]=await Promise.all(['index.html','style.css','cat.js','browser-segment.js','app.js'].map(read));
-const script=cat.replace(/^export /gm,'')+'\n'+segment.replace(/^export /gm,'')+'\n'+app.replace(/^import .*?;\n/gm,'');
-const output=html.replace('<link rel="stylesheet" href="style.css">',()=>`<style>${css}</style>`).replace('<script type="module" src="app.js"></script>',()=>`<script type="module">${script}</script>`);
+const [html,css,cat,frog,segment,app]=await Promise.all(['index.html','style.css','cat.js','frog.js','browser-segment.js','app.js'].map(read));
+const script=cat.replace(/^export /gm,'')+'\n'+frog.replace(/^import .*?;\n/gm,'').replace(/^export /gm,'')+'\n'+segment.replace(/^export /gm,'')+'\n'+app.replace(/^import .*?;\n/gm,'');
+const uiSources=[...new Set(Array.from(html.matchAll(/src="(assets\/ui\/[^"]+)"/g),match=>match[1]))];
+const embeddedImages=await Promise.all(uiSources.map(async path=>{
+ const bytes=await readFile(new URL(path,root));
+ const mime=path.endsWith('.png')?'image/png':'image/svg+xml';
+ return [path,'data:'+mime+';base64,'+bytes.toString('base64')];
+}));
+let standaloneHtml=html;
+for(const [path,uri] of embeddedImages)standaloneHtml=standaloneHtml.replaceAll('src="'+path+'"','src="'+uri+'"');
+const output=standaloneHtml.replace('<link rel="stylesheet" href="style.css">',()=>`<style>${css}</style>`).replace('<script type="module" src="app.js"></script>',()=>`<script type="module">${script}</script>`);
 await mkdir(new URL('dist/assets/ui/',root),{recursive:true});
 for(const name of ['logo','share','download','pencil','dice','camera'])await copyFile(new URL('assets/ui/'+name+'.svg',root),new URL('dist/assets/ui/'+name+'.svg',root));
+for(const name of ['tab-cat.png','tab-frog.svg'])await copyFile(new URL('assets/ui/'+name,root),new URL('dist/assets/ui/'+name,root));
 await mkdir(new URL('.cache/browser-model/',root),{recursive:true});
 const model=new URL('.cache/browser-model/u2netp.onnx',root),expected='8e83ca70e441ab06c318d82300c84806';
 async function verified(){try{return createHash('md5').update(await readFile(model)).digest('hex')===expected;}catch{return false;}}
@@ -37,3 +46,5 @@ await copyFile(new URL('review/expression-study-v3.svg',root),new URL('dist/revi
 
 await import('./build-full-catalog.mjs');
 for(const file of ['catalog-v7.html','expressions-v7.svg','combinations-v7.svg','eye-colors-v7.svg','poses-v7-1.svg','poses-v7-2.svg','poses-v7-3.svg'])await copyFile(new URL('review/'+file,root),new URL('dist/review/'+file,root));
+
+await import('./build-nailong-review.mjs');
