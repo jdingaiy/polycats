@@ -35,7 +35,8 @@ export function outlineFromMask(mask,width,height){
  for(let tolerance=.5;tolerance<Math.max(width,height);tolerance*=1.15){const candidate=[...simplify(arcA,tolerance).slice(0,-1),...simplify(arcB,tolerance).slice(0,-1)];if(candidate.length<=15&&validPolygon(candidate.map(p=>p.map(v=>v*10)))){reduced=candidate;break;}}
  if(!reduced)throw new Error('无法提取有效轮廓，请换一张图片。');boundary=reduced;
  const cx=width/2,cy=height/2;
- const scale=500/Math.max(width,height);
+ // Cover the square board, centering the photo and cropping overflow.
+ const scale=500/Math.min(width,height);
  const points=boundary.map(([x,y])=>[(x-cx)*scale+250,(y-cy)*scale+250]);
  if(!validPolygon(points))throw new Error('无法提取有效轮廓，请换一张图片。');
  return {points,vertices:points.length,placement:{x:250-cx*scale,y:250-cy*scale,width:width*scale,height:height*scale}};
